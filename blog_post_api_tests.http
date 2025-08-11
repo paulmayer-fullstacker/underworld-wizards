@@ -1,0 +1,184 @@
+#### API Validation Test ####
+
+# How to run the test plan:
+# a. Register a New User (Request ###1.). Use the {{$randomInt}} to generate unique usernames/emails, or set them manually. Copy e-mail address from the successful registration response and paste it into the registeredUserEmail variable.
+# b. Login User (Request #2). Copy the token from the successful login response and paste it into the @authToken variable. This token will be used for all subsequent authenticated requests.
+# c. Get Logged-in User Info (Request #3) to confirm our token works currectly.
+# The other test requests are self explanatory and commented. Keep an eye on the Db via the DBMS Dashboard (i.e., Workbench). Update the Id variables (registeredUserId, postId, commentId, categoryId) as appropriate. 
+#   Some test requests can only be submitted by the data (post) owner. This is indicated in the comments.
+
+### Base URL for our API
+@baseUrl = http://localhost:3001
+
+### Variable to store auth token after login
+# Tokens are received in quots ("token"). Howver they are copied here directly (toke).
+# Example: @authToken = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoxLCJpYXQiOjE2NzEwMDAwMDAsImV4cCI6MTY3MTAwMzYwMH0.signature
+@authToken = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJkYXRhIjp7ImVtYWlsIjoidGVzdHVzZXJfNDY2MUBleGFtcGxlLmNvbSIsInVzZXJuYW1lIjoidGVzdHVzZXJfNjQ0MiIsImlkIjo2fSwiaWF0IjoxNzUzNjI2OTkxLCJleHAiOjE3NTM2MzQxOTF9._Prus1CAFTwjPVA9GYBPRdhetX7PcjdbyB3yVJANEDE
+# Every time we receive a new token, in a response, we need to copy that token to my @authToken variable for further transactions to work
+
+### Variable to store the *registered* user's email for login and other user-specific actions
+@registeredUserEmail = testuser_4661@example.com
+# !! Update this with the exact email from your successful registration response. !!
+
+### Variable to store the *registered* user's ID for user-specific actions
+@registeredUserId = 4
+# Example: @registeredUserId = 5
+
+### Variable to store a post ID for subsequent requests
+@postId = 26
+# Example: @postId = 1
+
+### Variable to store a comment ID for subsequent requests
+@commentId = 8
+# Example: @commentId = 1
+
+### Variable to store a category ID for subsequent requests
+# Example: @categoryId = 1
+@categoryId = 3
+
+
+# User Management
+
+### 1. Register a New User
+POST {{baseUrl}}/api/users
+Content-Type: application/json
+
+{
+    "username": "testuser_{{$randomInt 1 10000}}",
+    "email": "testuser_{{$randomInt 1 10000}}@example.com",
+    "password": "password123"
+}
+
+
+### 2. Login User
+# After successful login, copy the 'token' from the response and paste it into the @authToken variable at the top of this file.
+POST {{baseUrl}}/api/users/login
+Content-Type: application/json
+
+{
+    "email": "{{registeredUserEmail}}",
+    "password": "password123"
+}
+
+
+### 3. Get Logged-in User Info (Requires Token)
+# Use the @authToken obtained from login.
+GET {{baseUrl}}/api/users/me
+Authorization: Bearer {{authToken}}
+
+
+### 4. Get a Single User by ID (Public)
+# Replace {{registeredUserId}} with an actual User ID.
+# This route does not require authentication.
+GET {{baseUrl}}/api/users/{{registeredUserId}}
+
+
+### 5. Get All Users (Requires Authentication/Token)
+# Uses the @authToken obtained from login.
+GET {{baseUrl}}/api/users
+Authorization: Bearer {{authToken}}
+
+
+# Category Management
+
+### 6. Create a New Category (Requires Authentication/Token)
+POST {{baseUrl}}/api/categories
+Content-Type: application/json
+Authorization: Bearer {{authToken}}
+
+{
+    "category_name": "Technology"
+}
+
+
+### 7. Get All Categories (Requires Authentication)
+GET {{baseUrl}}/api/categories
+Authorization: Bearer {{authToken}}
+
+
+### 8. Get a Single Category by ID (Requires Authentication)
+# Replace {{categoryId}} with an actual category_id. See Workbench.
+GET {{baseUrl}}/api/categories/{{categoryId}}
+Authorization: Bearer {{authToken}}
+
+
+### 9. Update a Category (Requires Authentication)
+# Only the category_name can be updated.
+PUT {{baseUrl}}/api/categories/{{categoryId}}
+Content-Type: application/json
+Authorization: Bearer {{authToken}}
+
+{
+    "category_name": "Web"
+}
+
+
+### 10. Delete a Category (Requires Authentication)
+DELETE {{baseUrl}}/api/categories/{{categoryId}}
+Authorization: Bearer {{authToken}}
+
+
+# Post Management
+
+### 11. Create a New Post (Requires Authentication)
+POST {{baseUrl}}/api/posts
+Content-Type: application/json
+Authorization: Bearer {{authToken}}
+
+{
+    "title": "My First API Post Title",
+    "content": "This is the content of my first post created via REST Client. It's exciting!",
+    "category_id": {{categoryId}}
+}
+
+
+### 12. Get All Posts (Requires Authentication)
+GET {{baseUrl}}/api/posts
+Authorization: Bearer {{authToken}}
+
+
+### 13. Get All Posts by Category ID (Requires Authentication)
+GET {{baseUrl}}/api/posts?category_id={{categoryId}}
+Authorization: Bearer {{authToken}}
+
+
+### 14. Get a Single Post by ID (Requires Authentication)
+# Replace {{postId}} with an actual post ID obtained from a create or get all posts request.
+GET {{baseUrl}}/api/posts/{{postId}}
+Authorization: Bearer {{authToken}}
+
+
+### 15. Update a Post by ID (Requires Authentication and Ownership)
+# Ensure we are logged in as the user who created the post.
+PUT {{baseUrl}}/api/posts/{{postId}}
+Content-Type: application/json
+Authorization: Bearer {{authToken}}
+
+{
+    "title": "Updated API Post Title",
+    "content": "This is the updated content of my post. Now with a new category!",
+    "category_id": {{categoryId}}
+}
+
+
+### 16. Delete a Post by ID (Requires Authentication and Ownership)
+DELETE {{baseUrl}}/api/posts/{{postId}}
+Authorization: Bearer {{authToken}}
+
+
+### 17. Create a New Comment on a Post (Requires Authentication)
+POST {{baseUrl}}/api/comments
+Content-Type: application/json
+Authorization: Bearer {{authToken}}
+
+{
+    "comment_text": "This is a great post, commenting from REST Client!",
+    "post_id": {{postId}}
+}
+
+
+# Close Connection
+
+### 18. Logout User and Close Connection (clears the token on the client).
+POST {{baseUrl}}/api/users/logout
+Authorization: Bearer {{authToken}}

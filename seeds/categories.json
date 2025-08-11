@@ -1,0 +1,13 @@
+[
+  { "id": 1, "category_name": "Technology" },
+  { "id": 2, "category_name": "JavaScript" },
+  { "id": 3, "category_name": "React" },
+  { "id": 4, "category_name": "Node.js" },
+  { "id": 5, "category_name": "Database" },
+  { "id": 6, "category_name": "GraphQL" },
+  { "id": 7, "category_name": "RESTful" },
+  { "id": 8, "category_name": "Web" },
+  { "id": 9, "category_name": "App" },
+  { "id": 10, "category_name": "HTTP" }
+]
+

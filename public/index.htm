@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Awesome Blog</title>
+    <link rel="stylesheet" href="./assets/style.css">
+</head>
+<body>
+    <div class="container" id="auth-container">
+        <h1>Welcome to My Blog</h1>
+        <h2>Register</h2>
+        <input type="text" id="username" placeholder="Username">
+        <input type="email" id="email" placeholder="Email">
+        <input type="password" id="password" placeholder="Password">
+        <button id="register-button">Register</button>
+        <hr>
+        <h2>Login</h2>
+        <input type="email" id="login-email" placeholder="Email">
+        <input type="password" id="login-password" placeholder="Password">
+        <button id="login-button">Login</button>
+    </div>
+
+    <div class="container hidden" id="app-container">
+        <h1>My Awesome Blog</h1>
+        <div class="header-actions">
+            <span id="welcome-message">Hello!</span>
+            <button id="logout-button">Logout</button>
+        </div>
+        <hr>
+
+        <div class="note-form-section">
+            <h2>Create New Post</h2>
+            <form id="post-form">
+                <input type="text" id="post-title-input" placeholder="Post Title" required>
+                <textarea id="post-content-input" placeholder="Write your post content here..." rows="5" required></textarea>
+                <label for="post-category-select" style="display: block; margin-top: 10px;">Category:</label>
+                <select id="post-category-select" required>
+                    <option value="">Select a Category</option>
+                    </select>
+                <button type="submit">Create Post</button>
+            </form>
+        </div>
+
+        <div class="notes-list-section">
+            <h2>Blog Posts</h2>
+            <div class="filter-controls" style="margin-bottom: 20px;">
+                <label for="category-filter">Filter by Category:</label>
+                <select id="category-filter">
+                    <option value="">All Categories</option>
+                    </select>
+            </div>
+            <ul id="posts-list">
+                <li>Loading posts...</li>
+            </ul>
+        </div>
+
+        <div id="post-detail-modal" class="modal">
+            <div class="modal-content">
+                <span class="close-button">&times;</span>
+                <h2 id="detail-post-title"></h2>
+                <p><small>By: <span id="detail-post-author"></span> on <span id="detail-post-date"></span></small></p>
+                <p><small>Category: <span id="detail-post-category"></span></small></p>
+
+                <label for="detail-post-category-select" style="display: none; margin-top: 10px;" id="detail-category-label">Category:</label>
+                <select id="detail-post-category-select" style="display: none; margin-bottom: 10px; width: 100%;">
+                    </select>
+
+                <textarea id="detail-post-content" rows="10" readonly></textarea>
+                <div class="detail-actions">
+                    <button id="edit-button" class="action-button edit">Edit Post</button>
+                    <button id="delete-button" class="action-button delete">Delete Post</button>
+                    <button id="save-edit-button" class="action-button save" style="display:none;">Save Changes</button>
+                    <button id="cancel-edit-button" class="action-button cancel" style="display:none;">Cancel Edit</button>
+                </div>
+
+                <hr>
+                <div id="comments-section">
+                    <h3>Comments</h3>
+                    <div id="comments-list">
+                        <p>No comments yet. Be the first!</p>
+                    </div>
+
+                    <h4>Add a Comment</h4>
+                    <form id="comment-form">
+                        <textarea id="comment-text-input" placeholder="Write your comment here..." rows="3" required></textarea>
+                        <button type="submit">Submit Comment</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="./assets/script.js"></script>
+</body>
+</html>

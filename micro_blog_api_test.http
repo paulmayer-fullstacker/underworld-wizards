@@ -1,0 +1,349 @@
+# /micro_blog_api_test.http
+
+#### API Validation Test ####
+
+# How to run the test plan:
+# a. Register a New User (Request ###1.). Use the {{$randomInt}} to generate unique usernames/emails, or set them manually. 
+#  If generating random mail, copy e-mail address from the successful registration response and paste it into the registeredUserEmail variable.
+# b. Login User (Request #2). Copy the token from the successful login response and paste it into the @authToken variable. This token will be used for all subsequent authenticated requests.
+# c. Get Logged-in User Info (Request #3) to confirm our token works currectly.
+# The other test requests are self explanatory and commented. Keep an eye on the Db via the DBMS Dashboard (i.e., Workbench). Update the Id variables (registeredUserId, postId, commentId, categoryId) as appropriate. 
+#  Some test requests can only be submitted by the data (post) owner. This is indicated in the comments.
+
+### Base URL for our API
+@baseUrl = http://localhost:3001
+
+### Variable to store auth token after login
+# Tokens are received in quotes ("token"). However they are copied here directly (token).
+# Example: @authToken = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoxLCJpYXQiOjE2NzEwMDAwMDAsImV4cCI6MTY3MTAwMzYwMH0.signature
+@authToken = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJkYXRhIjp7ImVtYWlsIjoidGVzdHVzZXJfNDY2MUBleGFtcGxlLmNvbSIsInVzZXJuYW1lIjoidGVzdHVzZXJfNDY2MSIsImlkIjozfSwiaWF0IjoxNzU0OTA4NjI3LCJleHAiOjE3NTQ5MTU4Mjd9.OxG3KeO5UEKGe0_pvbf1jWYKMymtJnYF_pFMSPfgxho
+# Every time we receive a new token, in a response, we need to copy that token to my @authToken variable for further transactions to work
+
+### Variable to store the *registered* user's email for login and other user-specific actions
+@registeredUserEmail = testuser_4661@example.com
+# !! Update this with the exact email from your successful registration response. !!
+
+### Variable to store the *registered* user's ID for user-specific actions
+@registeredUserId = 3
+# Example: @registeredUserId = 5
+
+### Variable to store a post ID for subsequent requests
+@postId = 18
+# Example: @postId = 1
+
+### Variable to store a comment ID for subsequent requests
+@commentId = 1
+# Example: @commentId = 1
+
+### Variable to store a category ID for subsequent requests
+# Example: @categoryId = 1
+@categoryId = 2
+
+### Variables to represent a second User. Required to test the Follow function
+@testUser2Email = testuser_2_@example.com
+@testUser2Id = 4
+# Remember to update the User2Token, as retured when User2 logs in
+@testUser2Token = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJkYXRhIjp7ImVtYWlsIjoidGVzdHVzZXJfMl9AZXhhbXBsZS5jb20iLCJ1c2VybmFtZSI6InRlc3R1c2VyXzIiLCJpZCI6NH0sImlhdCI6MTc1NDkwODgxMywiZXhwIjoxNzU0OTE2MDEzfQ.VDJnZEqHLQiLeHEQJrPxvVeEPrBNDe8s6yYj3xBnAvc
+
+# User Management
+
+### 1. Register a New User
+POST {{baseUrl}}/api/users
+Content-Type: application/json
+
+{
+    "username": "testuser_4661",
+    "email": "{{registeredUserEmail}}",
+    "password": "password123"
+}
+
+
+### 2. Login User
+# After successful login, copy the 'token' from the response and paste it into the @authToken variable at the top of this file.
+POST {{baseUrl}}/api/users/login
+Content-Type: application/json
+
+{
+    "email": "{{registeredUserEmail}}",
+    "password": "password123"
+}
+
+
+### 3. Get Logged-in User Info (Requires Token)
+# Use the @authToken obtained from login.
+GET {{baseUrl}}/api/users/me
+Authorization: Bearer {{authToken}}
+
+
+### 4. Get a Single User by ID (Public)
+# Replace {{registeredUserId}} with an actual User ID.
+# This route does not require authentication.
+GET {{baseUrl}}/api/users/{{registeredUserId}}
+
+
+### 5. Get All Users (Requires Authentication/Token)
+# Uses the @authToken obtained from login.
+GET {{baseUrl}}/api/users
+Authorization: Bearer {{authToken}}
+
+
+# Category Management
+
+### 6. Create a New Category (Requires Authentication/Token)
+POST {{baseUrl}}/api/categories
+Content-Type: application/json
+Authorization: Bearer {{authToken}}
+
+{
+    "category_name": "Technology"
+}
+
+
+### 7. Get All Categories (Requires Authentication)
+GET {{baseUrl}}/api/categories
+Authorization: Bearer {{authToken}}
+
+
+### 8. Get a Single Category by ID (Requires Authentication)
+# Replace {{categoryId}} with an actual category_id. See Workbench.
+GET {{baseUrl}}/api/categories/{{categoryId}}
+Authorization: Bearer {{authToken}}
+
+
+### 9. Update a Category (Requires Authentication)
+# Only the category_name can be updated. Now Repeat '8' to confirm change.
+PUT {{baseUrl}}/api/categories/{{categoryId}}
+Content-Type: application/json
+Authorization: Bearer {{authToken}}
+
+{
+    "category_name": "Web"
+}
+
+
+### 10. Delete a Category (Requires Authentication)
+# Now run '8' to confirm.
+DELETE {{baseUrl}}/api/categories/{{categoryId}}
+Authorization: Bearer {{authToken}}
+
+
+# Post Management
+
+### 11. Create a New Post (Requires Authentication)
+# Be sure to chnage the categoryId var first, as the original categoryId has been deleted.
+POST {{baseUrl}}/api/posts
+Content-Type: application/json
+Authorization: Bearer {{authToken}}
+
+{
+    "title": "testuser_4661: My First API Post Title",
+    "content": "testuser_4661: This is the content of my first post created via REST Client. It's exciting!",
+    "category_id": {{categoryId}}
+}
+
+
+### 12. Get All Posts (Requires Authentication)
+GET {{baseUrl}}/api/posts
+Authorization: Bearer {{authToken}}
+
+
+### 13. Get All Posts by Category ID (Requires Authentication)
+GET {{baseUrl}}/api/posts?category_id={{categoryId}}
+Authorization: Bearer {{authToken}}
+
+
+### 14. Get a Single Post by ID (Requires Authentication)
+# Replace {{postId}} with an actual post ID obtained from a create or get all posts request.
+# The response for this request will now include a 'likers' array.
+GET {{baseUrl}}/api/posts/{{postId}}
+Authorization: Bearer {{authToken}}
+
+
+### 15. Update a Post by ID (Requires Authentication and Ownership)
+# Ensure we are logged in as the user who created the post.
+PUT {{baseUrl}}/api/posts/{{postId}}
+Content-Type: application/json
+Authorization: Bearer {{authToken}}
+
+{
+    "title": "Updated API Post Title",
+    "content": "This is the updated content of my post. Now with a new category!",
+    "category_id": {{categoryId}}
+}
+
+
+### 16. Delete a Post by ID (Requires Authentication and Ownership)
+DELETE {{baseUrl}}/api/posts/{{postId}}
+Authorization: Bearer {{authToken}}
+
+
+# Comment Management
+
+### 17. Create a New Comment on a Post (Requires Authentication)
+# Remember to change postId var value, as original deleted
+POST {{baseUrl}}/api/comments
+Content-Type: application/json
+Authorization: Bearer {{authToken}}
+
+{
+    "comment_text": "This is a great post, commenting from REST Client! Test User 1",
+    "post_id": {{postId}}
+}
+
+
+### 18. Update a Comment (Requires Authentication and Ownership of Comment)
+# Replace {{commentId}} with the ID of an existing comment.
+PUT {{baseUrl}}/api/comments/{{commentId}}
+Content-Type: application/json
+Authorization: Bearer {{authToken}}
+
+{
+    "comment_text": "This comment has been updated from the REST Client! Test User_1"
+}
+
+
+### 19. Delete a Comment (Requires Authentication and Ownership of Comment)
+# Replace {{commentId}} with the ID of an existing comment.
+DELETE {{baseUrl}}/api/comments/{{commentId}}
+Authorization: Bearer {{authToken}}
+
+
+### 20. Get Post with deleted comment (Requires Authentication)
+# Re-run a GET post request to confirm the comment was deleted.
+GET {{baseUrl}}/api/posts/{{postId}}
+Authorization: Bearer {{authToken}}
+
+
+# Like Management
+
+### 21. Like a Post (Requires Authentication)
+# Use the {{postId}} variable to like a post.
+POST {{baseUrl}}/api/likes
+Content-Type: application/json
+Authorization: Bearer {{authToken}}
+
+{
+    "post_id": {{postId}}
+}
+
+
+### 22. Unlike a Post (Requires Authentication)
+# Use the {{postId}} variable to unlike a post.
+DELETE {{baseUrl}}/api/likes/{{postId}}
+Authorization: Bearer {{authToken}}
+
+
+# Follow Management
+
+### 23. Register a Second User
+# This user will follow the first user. Copy the 'id' from the response to @testUser2Id
+POST {{baseUrl}}/api/users
+Content-Type: application/json
+
+{
+    "username": "testuser_2",
+    "email": "{{testUser2Email}}",
+    "password": "password123"
+}
+
+
+### 24. Login Second User
+# Copy the token from the response into the @testUser2Token variable
+POST {{baseUrl}}/api/users/login
+Content-Type: application/json
+
+{
+    "email": "{{testUser2Email}}",
+    "password": "password123"
+}
+
+
+### 25. Follow the First User (from the Second User's account)
+# Use the @testUser2Token to authorize and the @registeredUserId to specify who to follow.
+POST {{baseUrl}}/api/follows
+Content-Type: application/json
+Authorization: Bearer {{testUser2Token}}
+
+{
+    "followed_id": {{registeredUserId}}
+}
+
+
+### 26. Check the First User's Profile to see the new follower
+# The followerCount in the response should now be 1.
+GET {{baseUrl}}/api/users/{{registeredUserId}}
+
+
+### 27. Unfollow the First User (from the Second User's account)
+# Use the @testUser2Token to authorize and the @registeredUserId to specify who to unfollow.
+DELETE {{baseUrl}}/api/follows/{{registeredUserId}}
+Authorization: Bearer {{testUser2Token}}
+
+
+### 28. Check the First User's Profile to see the follower count update
+# The followerCount should now be 0.
+GET {{baseUrl}}/api/users/{{registeredUserId}}
+
+
+# Feed Management
+
+### 29_Pre. Create a New Post as User_2 (Requires Authentication)
+# 
+POST {{baseUrl}}/api/posts
+Content-Type: application/json
+Authorization: Bearer {{testUser2Token}}
+
+{
+    "title": "testUser_2: My First API Post Title",
+    "content": "testUser_2: This is the content of my first post created via REST Client. It's exciting!",
+    "category_id": {{categoryId}}
+}
+
+
+### 30. Get Personalised Feed (Requires Authentication). 
+# Returns a list of posts from all users that this user is following, and the user's own posts.
+GET {{baseUrl}}/feed
+Authorization: Bearer {{testUser2Token}}
+
+
+# Search Functionality
+
+### 27. Create a New Post for Search Testing by test_user_1
+# Use a specific title and content to make it easy to search for.
+POST {{baseUrl}}/api/posts
+Content-Type: application/json
+Authorization: Bearer {{authToken}}
+
+{
+    "title": "A Searchable Title about Web Development",
+    "content": "This post contains content about JavaScript and Node.js that should be easy to find.",
+    "category_id": {{categoryId}}
+}
+
+
+### 28. Search for a Post by Title, by test_user_2
+# Use the 'q' query parameter to search for a keyword.
+# This should return the post we just created.
+GET {{baseUrl}}/api/search?q=Web
+Authorization: Bearer {{testUser2Token}}
+
+
+### 29. Search for a Post by Content, by test_user_2
+# This search should also return the post we just created.
+GET {{baseUrl}}/api/search?q=JavaScript
+Authorization: Bearer {{testUser2Token}}
+
+
+### 30. Search for a Post with no results
+# This search should return an empty array.
+GET {{baseUrl}}/api/search?q=NonexistentKeyword
+Authorization: Bearer {{testUser2Token}}
+
+
+# Close Connection
+
+### 31. Logout User and Close Connection (clears the token on the client).
+POST {{baseUrl}}/api/users/logout
+Authorization: Bearer {{authToken}}
+
+### End of file.

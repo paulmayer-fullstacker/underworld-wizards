@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Post Details</title>
+    <link rel="stylesheet" href="./assets/style.css"> <style>
+     
+        #post-details {
+            border: 1px solid #ccc;
+            padding: 20px;
+            margin-bottom: 20px;
+            background-color: #f9f9f9;
+        }
+        .comment-item {
+            border-bottom: 1px solid #eee;
+            padding: 10px 0;
+            margin-bottom: 10px;
+        }
+        .comment-item:last-child {
+            border-bottom: none;
+        }
+        #comment-form {
+            margin-top: 20px;
+        }
+        #comment-form textarea {
+            width: 98%;
+            padding: 8px;
+            margin-bottom: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+        #comment-form button {
+            background-color: #4CAF50;
+            color: white;
+            padding: 10px 15px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        #comment-form button:hover {
+            background-color: #45a049;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Post Details</h1>
+        <nav>
+            <button onclick="window.location.href='/'">Back to All Posts</button>
+            </nav>
+        <hr>
+
+        <section id="post-details">
+            <h2 id="post-title">Loading Post...</h2>
+            <p id="post-content"></p>
+            <small>By: <span id="post-author"></span> on <span id="post-date"></span></small>
+        </section>
+
+        <hr>
+
+        <section id="comments-section">
+            <h3>Comments</h3>
+            <div id="comments-list">
+                <p>No comments yet. Loading...</p>
+            </div>
+
+            <hr>
+
+            <h4>Add a Comment</h4>
+            <form id="comment-form">
+                <div class="form-group">
+                    <label for="comment-text">Your Comment:</label>
+                    <textarea id="comment-text" rows="4" required></textarea>
+                </div>
+                <button type="submit">Submit Comment</button>
+            </form>
+        </section>
+    </div>
+
+    <script src="./assets/single-post.js"></script> </body>
+</html>
