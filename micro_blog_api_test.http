@@ -16,7 +16,7 @@
 ### Variable to store auth token after login
 # Tokens are received in quotes ("token"). However they are copied here directly (token).
 # Example: @authToken = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoxLCJpYXQiOjE2NzEwMDAwMDAsImV4cCI6MTY3MTAwMzYwMH0.signature
-@authToken = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJkYXRhIjp7ImVtYWlsIjoidGVzdHVzZXJfNDY2MUBleGFtcGxlLmNvbSIsInVzZXJuYW1lIjoidGVzdHVzZXJfNDY2MSIsImlkIjozfSwiaWF0IjoxNzU0OTA4NjI3LCJleHAiOjE3NTQ5MTU4Mjd9.OxG3KeO5UEKGe0_pvbf1jWYKMymtJnYF_pFMSPfgxho
+@authToken = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJkYXRhIjp7ImVtYWlsIjoidGVzdHVzZXJfNDY2MUBleGFtcGxlLmNvbSIsInVzZXJuYW1lIjoidGVzdHVzZXJfNDY2MSIsImlkIjozfSwiaWF0IjoxNzU0OTM2NzEzLCJleHAiOjE3NTQ5NDM5MTN9.naulLrg1WQFIAn5L-Z9627QQ7kh1sGWNMOqmu7gBTec
 # Every time we receive a new token, in a response, we need to copy that token to my @authToken variable for further transactions to work
 
 ### Variable to store the *registered* user's email for login and other user-specific actions
@@ -43,7 +43,7 @@
 @testUser2Email = testuser_2_@example.com
 @testUser2Id = 4
 # Remember to update the User2Token, as retured when User2 logs in
-@testUser2Token = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJkYXRhIjp7ImVtYWlsIjoidGVzdHVzZXJfMl9AZXhhbXBsZS5jb20iLCJ1c2VybmFtZSI6InRlc3R1c2VyXzIiLCJpZCI6NH0sImlhdCI6MTc1NDkwODgxMywiZXhwIjoxNzU0OTE2MDEzfQ.VDJnZEqHLQiLeHEQJrPxvVeEPrBNDe8s6yYj3xBnAvc
+@testUser2Token = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJkYXRhIjp7ImVtYWlsIjoidGVzdHVzZXJfMl9AZXhhbXBsZS5jb20iLCJ1c2VybmFtZSI6InRlc3R1c2VyXzIiLCJpZCI6NH0sImlhdCI6MTc1NDkzNzk1MSwiZXhwIjoxNzU0OTQ1MTUxfQ.fH3oA39vOWOzQXbqJBCFatcKzmUHKzi5rKSsAbMEWWE
 
 # User Management
 
@@ -136,8 +136,8 @@ Content-Type: application/json
 Authorization: Bearer {{authToken}}
 
 {
-    "title": "testuser_4661: My First API Post Title",
-    "content": "testuser_4661: This is the content of my first post created via REST Client. It's exciting!",
+    "title": "testuser_4661: My Second API Post Title",
+    "content": "testuser_4661: This is the content of my second post created via REST Client. It's exciting!",
     "category_id": {{categoryId}}
 }
 
@@ -308,7 +308,7 @@ Authorization: Bearer {{testUser2Token}}
 
 # Search Functionality
 
-### 27. Create a New Post for Search Testing by test_user_1
+### 31. Create a New Post for Search Testing by test_user_1
 # Use a specific title and content to make it easy to search for.
 POST {{baseUrl}}/api/posts
 Content-Type: application/json
@@ -321,20 +321,20 @@ Authorization: Bearer {{authToken}}
 }
 
 
-### 28. Search for a Post by Title, by test_user_2
+### 32. Search for a Post by Title, by test_user_2
 # Use the 'q' query parameter to search for a keyword.
 # This should return the post we just created.
 GET {{baseUrl}}/api/search?q=Web
 Authorization: Bearer {{testUser2Token}}
 
 
-### 29. Search for a Post by Content, by test_user_2
+### 33. Search for a Post by Content, by test_user_2
 # This search should also return the post we just created.
 GET {{baseUrl}}/api/search?q=JavaScript
 Authorization: Bearer {{testUser2Token}}
 
 
-### 30. Search for a Post with no results
+### 34. Search for a Post with no results
 # This search should return an empty array.
 GET {{baseUrl}}/api/search?q=NonexistentKeyword
 Authorization: Bearer {{testUser2Token}}
@@ -342,7 +342,7 @@ Authorization: Bearer {{testUser2Token}}
 
 # Close Connection
 
-### 31. Logout User and Close Connection (clears the token on the client).
+### 35. Logout User and Close Connection (clears the token on the client).
 POST {{baseUrl}}/api/users/logout
 Authorization: Bearer {{authToken}}
 
