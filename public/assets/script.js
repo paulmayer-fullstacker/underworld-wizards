@@ -313,7 +313,7 @@ const fetchPosts = async (categoryId = "") => {
                 <div class="post-info" data-id="${post.id}">
                     <span class="post-title">${post.title}</span><br>
                     <span class="post-meta">
-                        By: ${post.User ? post.User.username : 'Unknown User'} on ${formattedDate}
+                        By: ${post.user ? post.user.username : 'Unknown User'} on ${formattedDate}
                         ${post.category ? ` (Category: ${post.category.category_name})` : ''} </span>
                 </div>
             `;
@@ -353,7 +353,7 @@ const viewPost = async (id) => {
             year: 'numeric', month: 'short', day: 'numeric',
             hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false
         });
-        detailPostAuthor.textContent = post.User ? post.User.username : 'Unknown User';
+        detailPostAuthor.textContent = post.user ? post.user.username : 'Unknown User';
         detailPostContent.value = post.content;
         detailPostContent.readOnly = true;
 

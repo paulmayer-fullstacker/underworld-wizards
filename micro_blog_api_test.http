@@ -16,7 +16,7 @@
 ### Variable to store auth token after login
 # Tokens are received in quotes ("token"). However they are copied here directly (token).
 # Example: @authToken = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoxLCJpYXQiOjE2NzEwMDAwMDAsImV4cCI6MTY3MTAwMzYwMH0.signature
-@authToken = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJkYXRhIjp7ImVtYWlsIjoidGVzdHVzZXJfNDY2MUBleGFtcGxlLmNvbSIsInVzZXJuYW1lIjoidGVzdHVzZXJfNDY2MSIsImlkIjozfSwiaWF0IjoxNzU0OTM2NzEzLCJleHAiOjE3NTQ5NDM5MTN9.naulLrg1WQFIAn5L-Z9627QQ7kh1sGWNMOqmu7gBTec
+@authToken = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJkYXRhIjp7ImVtYWlsIjoidGVzdHVzZXJfNDY2MUBleGFtcGxlLmNvbSIsInVzZXJuYW1lIjoidGVzdHVzZXJfNDY2MSIsImlkIjo0fSwiaWF0IjoxNzU1MDM3MDc1LCJleHAiOjE3NTUwNDQyNzV9.SHSNWfJF16kcF-jn7-mqTgIo73IETtViea7mhLXY5jw
 # Every time we receive a new token, in a response, we need to copy that token to my @authToken variable for further transactions to work
 
 ### Variable to store the *registered* user's email for login and other user-specific actions
