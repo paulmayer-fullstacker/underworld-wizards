@@ -1,101 +1,33 @@
 // // routes/search-routes.js
-// const router = require('express').Router();
-// const { Op } = require('sequelize');
-// const { Post, User, Comment, Category, Like } = require('../models');
-// const { authMiddleware } = require('../utils/auth');
+// Define API endpoint for searching posts based on a query.
 
-// // GET search results for posts
-// // This route is protected by authentication and expects a query parameter 'q'.
-// // Example: /api/search?q=javascript
-// router.get('/', authMiddleware, async (req, res) => {
-//   try {
-//     const searchTerm = req.query.q;
-
-//     // Check if a search term was provided in the query.
-//     if (!searchTerm) {
-//       return res.status(400).json({ message: 'A search term is required.' });
-//     }
-
-//     // Perform a case-insensitive search for posts where the title or content
-//     // contains the search term. The Op.iLike operator is for case-insensitive
-//     // pattern matching in PostgreSQL, but Op.like with a lowercase conversion
-//     // is a common way to achieve this across other databases.
-//     const searchResults = await Post.findAll({
-//       where: {
-//         [Op.or]: [
-//           {
-//             title: {
-//               [Op.like]: `%${searchTerm}%`,
-//             },
-//           },
-//           {
-//             content: {
-//               [Op.like]: `%${searchTerm}%`,
-//             },
-//           },
-//         ],
-//       },
-//       // Eagerly load all related data to provide a comprehensive response
-//       include: [
-//         {
-//           model: User,
-//           attributes: ['id', 'username'],
-//         },
-//         {
-//           model: Category,
-//           attributes: ['id', 'category_name'],
-//         },
-//         {
-//           model: Comment,
-//           include: {
-//             model: User,
-//             attributes: ['id', 'username'],
-//           },
-//         },
-//         {
-//           model: Like,
-//           include: {
-//             model: User,
-//             attributes: ['id', 'username'],
-//           },
-//         },
-//       ],
-//       order: [['createdAt', 'DESC']], // Sort results by creation date
-//     });
-
-//     res.status(200).json(searchResults);
-//   } catch (err) {
-//     console.error('Error during post search:', err);
-//     res.status(500).json({ message: 'Failed to retrieve search results.', error: err.message });
-//   }
-// });
-
-// module.exports = router;
-
+// Creating new Express router for search functionality.
 const router = require('express').Router();
+// We the `Op` (Operators) object from Sequelize, which allows us to use logical operators like `OR` and `LIKE` in queries.
 const { Op } = require('sequelize');
+// Import all the models needed to perform the search and eagerly load related data.
 const { Post, User, Comment, Category, Like } = require('../models');
+// Protect search-routes with `authMiddleware` to ensure only logged-in users can search.
 const { authMiddleware } = require('../utils/auth');
 
-// GET search results for posts
-// This route is protected by authentication and expects a query parameter 'q'.
-// Example: /api/search?q=javascript
+// GET search results for posts (protected). Expects a query parameter 'q' (Example: /api/search?q=javascript).
 router.get('/', authMiddleware, async (req, res) => {
   try {
+    // Get the search term from the query parameter.
     const searchTerm = req.query.q;
-
-    // Check if a search term was provided in the query.
+    // If: no search term provided in the query.
     if (!searchTerm) {
+      // Return a 400 Bad Request status.
       return res.status(400).json({ message: 'A search term is required.' });
     }
-
-    // Perform a case-insensitive search for posts where the title or content
-    // contains the search term.
+    // Else: Perform a case-insensitive search for posts where the title or content contains the search term.
     const searchResults = await Post.findAll({
       where: {
+        // Use `Op.or` to search for the term in either the `title` or the `content` of the post.
         [Op.or]: [
           {
             title: {
+              // `Op.like` performs a pattern match. The `%` wildcards mean the search term can appear anywhere in the string.
               [Op.like]: `%${searchTerm}%`,
             },
           },
@@ -110,7 +42,7 @@ router.get('/', authMiddleware, async (req, res) => {
       include: [
         {
           model: User,
-          as: 'user', // FIX: Add the 'user' alias for the post's author
+          as: 'user',
           attributes: ['id', 'username'],
         },
         {
@@ -123,21 +55,22 @@ router.get('/', authMiddleware, async (req, res) => {
           as: 'comments', // Alias the comment model
           include: {
             model: User,
-            as: 'CommentAuthor', // FIX: Add the 'CommentAuthor' alias for the comment's author
+            as: 'CommentAuthor', 
             attributes: ['id', 'username'],
           },
         },
         {
           model: User,
-          as: 'likers', // FIX: Include the 'likers' alias directly for a more efficient query
+          as: 'likers', 
           attributes: ['id', 'username'],
-          // The 'through' option here is used to prevent the join table data from being returned
+          // The 'through' option used to prevent the join table data from being returned
           through: {
             attributes: []
           }
         },
       ],
-      order: [['createdOn', 'DESC']], // Sort results by creation date
+      // Sort results by creation date in descending order.
+      order: [['createdOn', 'DESC']],
     });
 
     res.status(200).json(searchResults);
@@ -146,6 +79,6 @@ router.get('/', authMiddleware, async (req, res) => {
     res.status(500).json({ message: 'Failed to retrieve search results.', error: err.message });
   }
 });
-
+// Export, making available to index.js
 module.exports = router;
 
