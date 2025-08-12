@@ -1,6 +1,8 @@
 // models/Comment.js
+// Import Model (the base class for all of our models), 
+// and DataTypes (object containing all the available data types (like TEXT, INTEGER, etc.), from the sequelize library.
 const { Model, DataTypes } = require('sequelize');
-const sequelize = require('../config/connection'); // Adjust this path if your connection.js is elsewhere
+const sequelize = require('../config/connection'); 
 
 // Create the Comment model
 class Comment extends Model {}
@@ -45,7 +47,7 @@ Comment.init(
   {
     // Model configuration options
     sequelize, // Pass the Sequelize connection instance
-    timestamps: true, // Add createdAt and updatedAt columns
+    timestamps: true, // Add createdOn and updatedOn columns
     freezeTableName: true,
     underscored: true, // Use snake_case for column names (e.g., comment_text, post_id, user_id)
     modelName: 'comment', // Set the model name
