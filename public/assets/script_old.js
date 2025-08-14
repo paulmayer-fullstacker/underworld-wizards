@@ -1,14 +1,9 @@
 // public/assets/script.js
 
-// This file contains all the client-side JavaScript logic for the blog application.
-// It handles user authentication, post creation, viewing, editing, and deleting,
-// as well as comment functionality and dynamic UI updates.
-
-// Global Variables
 let token = localStorage.getItem("authToken");
-let loggedInUserId = null;
+let loggedInUserId = null; // Store the ID of the logged-in user
 
-// DOM Element References
+// --- DOM Element References ---
 // Auth/App Containers
 const authContainer = document.getElementById("auth-container");
 const appContainer = document.getElementById("app-container");
@@ -29,9 +24,8 @@ const logoutButton = document.getElementById("logout-button");
 // Post Creation Form Elements
 const postForm = document.getElementById("post-form");
 const postTitleInput = document.getElementById("post-title-input");
-// const postContentInput = document.getElementById("post-content-input"); // Replaced by Quill editor
+const postContentInput = document.getElementById("post-content-input");
 const postCategorySelect = document.getElementById("post-category-select"); // For creating posts
-const postContentEditor = document.getElementById("post-content-editor");
 
 // Posts List Elements
 const postsList = document.getElementById("posts-list"); // This is our <ul> element
@@ -43,8 +37,7 @@ const detailPostTitle = document.getElementById("detail-post-title");
 const detailPostAuthor = document.getElementById("detail-post-author");
 const detailPostDate = document.getElementById("detail-post-date");
 const detailPostCategory = document.getElementById("detail-post-category");
-// const detailPostContent = document.getElementById("detail-post-content");  // Replaced by Quill text editor
-const detailPostContentEditor = document.getElementById("detail-post-content-editor");
+const detailPostContent = document.getElementById("detail-post-content");
 const editButton = document.getElementById("edit-button");
 const deleteButton = document.getElementById("delete-button");
 const saveEditButton = document.getElementById("save-edit-button");
@@ -63,125 +56,19 @@ const commentTextInput = document.getElementById("comment-text-input");
 // Category Filter Element
 const categoryFilterSelect = document.getElementById("category-filter");
 
-// Custom Message Modal Elements
-const messageModal = document.getElementById('message-modal');
-const messageTitle = document.getElementById('message-title');
-const messageText = document.getElementById('message-text');
-const messageOkButton = document.getElementById('message-ok-button');
-const messageCancelButton = document.getElementById('message-cancel-button');
-const messageCloseButton = document.getElementById('message-close-button');
-
-let messageCallback = null;
 let currentPostId = null; // Reference to the post currently being viewed/edited
 
-// Quill.js Editor Initialization
-
-// Redundant Code
-// // Quill.js Initialization - Limited toolbar
-// const postQuill = new Quill('#post-content-editor', {
-//     theme: 'snow',
-//     placeholder: 'Write your post content here...'
-// });
-
-// Common Quill.js Configuration (Parent)
-const commonQuillOptions = {
-    theme: 'snow',
-    modules: {
-        toolbar: [
-            ['bold', 'italic', 'underline', 'strike'],
-            ['blockquote', 'code-block'],
-            [{ 'header': 1 }, { 'header': 2 }],
-            [{ 'list': 'ordered' }, { 'list': 'bullet' }],
-            [{ 'script': 'sub' }, { 'script': 'super' }],
-            [{ 'indent': '-1' }, { 'indent': '+1' }],
-            [{ 'direction': 'rtl' }],
-            [{ 'size': ['small', false, 'large', 'huge'] }],
-            [{ 'header': [1, 2, 3, 4, 5, 6, false] }],
-            [{ 'color': [] }, { 'background': [] }],
-            [{ 'font': [] }],
-            [{ 'align': [] }],
-            ['link', 'image'],
-            ['clean']
-        ]
-    }
-};
-
-// Quill.js Initialization for Post Creation.
-// Inherit commonQuillOptions, overload with placeholder.
-const postQuill = new Quill('#post-content-editor', {
-    ...commonQuillOptions,
-    placeholder: 'Write your post content here...'
-});
-
-// Quill.js Initialization for Post Details
-// Inherit commonQuillOptions. No overrdie or overload. No placeholder text.
-const detailQuill = new Quill('#detail-post-content-editor', {
-    ...commonQuillOptions,
-    // Empty placeholder.  placeholder: 'View post content here...',
-});
-
-// Initially set the detail quill editor to read-only. Eable editing when the user clicks the "Edit" button.
-detailQuill.enable(false);
-
-
-// Custom Modal Functions (replacing default alert() / confirm())
-// Displays custom alert modal with a given message.
-const showAlert = (message) => {
-    messageTitle.textContent = 'Notification';
-    messageText.textContent = message;
-    messageOkButton.classList.remove('hidden');
-    messageCancelButton.classList.add('hidden');
-    messageModal.style.display = 'flex';
-    messageOkButton.onclick = () => {
-        messageModal.style.display = 'none';
-    };
-    messageCloseButton.onclick = () => {
-        messageModal.style.display = 'none';
-    };
-};
-// Displays custom confirmation modal and executes callback function based on the user's choice
-const showConfirm = (message, callback) => {
-    messageTitle.textContent = 'Confirm Action';
-    messageText.textContent = message;
-    messageOkButton.classList.remove('hidden');
-    messageCancelButton.classList.remove('hidden');
-    messageModal.style.display = 'flex';
-    messageCallback = callback;
-    // If: user confirms, callback is called with 'true'.
-    messageOkButton.onclick = () => {
-        messageModal.style.display = 'none';
-        if (messageCallback) {
-            messageCallback(true);
-        }
-    };
-    // If: user cancels or closes the modal, callback is called with 'false'.
-    messageCancelButton.onclick = () => {
-        messageModal.style.display = 'none';
-        if (messageCallback) {
-            messageCallback(false);
-        }
-    };
-    messageCloseButton.onclick = () => {
-        messageModal.style.display = 'none';
-        if (messageCallback) {
-            messageCallback(false);
-        }
-    };
-};
-
-
-// Helper Functions
+// --- Helper Functions ---
 
 // Toggles visibility of auth/app containers based on login status
 const toggleAppVisibility = async () => { // Async to await fetch for loggedInUserId and welcome message
-    // If token exists: the user is logged in.
     if (token) {
         authContainer.classList.add("hidden");
         appContainer.classList.remove("hidden");
-        await getLoggedInUserInfo(); // Fetch user info, posts, and categories after login
+        await getLoggedInUserInfo(); // Fetch user info after login
         fetchPosts(); // Load all posts initially
         fetchCategories(); // Load categories for filtering and post creation/editing
-    } else {  // If no token exists, user is logged out.
+    } else {
         authContainer.classList.remove("hidden");
         appContainer.classList.add("hidden");
         postsList.innerHTML = "<li>Please log in to view posts.</li>"; // Clear posts
@@ -211,7 +98,7 @@ const getLoggedInUserInfo = async () => {
         if (response.ok) {
             const data = await response.json();
             loggedInUserId = data.user.id;
-            welcomeMessage.textContent = `Welcome, ${data.user.username}!`;  // Update the welcome message with user name
+            welcomeMessage.textContent = `Welcome, ${data.user.username}!`;
         } else if (response.status === 401 || response.status === 403) {
             console.error("Token expired or invalid, logging out.");
             logout(); // Log out if token is invalid
@@ -228,14 +115,14 @@ const getLoggedInUserInfo = async () => {
 };
 
 // --- Auth Functions ---
-// Handles user registration by sending POST request to the backend.
+
 async function register() {
     const username = usernameInput.value.trim();
     const email = emailInput.value.trim();
     const password = passwordInput.value.trim();
 
     if (!username || !email || !password) {
-        showAlert("Please fill in all fields for registration.");
+        alert("Please fill in all fields for registration.");
         return;
     }
 
@@ -248,26 +135,26 @@ async function register() {
         const data = await res.json();
 
         if (res.ok) {
-            showAlert("User registered successfully. Please login.");
+            alert("User registered successfully. Please login.");
             // Clear registration form fields
             usernameInput.value = "";
             emailInput.value = "";
             passwordInput.value = "";
         } else {
-            showAlert(`Registration failed: ${data.message || 'Unknown error'}`);
+            alert(`Registration failed: ${data.message || 'Unknown error'}`);
         }
     } catch (error) {
         console.error("Error during registration:", error);
-        showAlert("An error occurred during registration. Please try again.");
+        alert("An error occurred during registration. Please try again.");
     }
 }
-// Handles user login by sending POST request to the backend.
+
 async function login() {
     const email = loginEmailInput.value.trim();
     const password = loginPasswordInput.value.trim();
 
     if (!email || !password) {
-        showAlert("Please enter both email and password.");
+        alert("Please enter both email and password.");
         return;
     }
 
@@ -284,20 +171,20 @@ async function login() {
             token = data.token;
             loggedInUserId = data.user_id; 
 
-            showAlert("User Logged In successfully");
+            alert("User Logged In successfully");
             toggleAppVisibility(); // Fetch categories and user info
             // Clear login form fields
             loginEmailInput.value = "";
             loginPasswordInput.value = "";
         } else {
-            showAlert(`Login failed: ${data.message || 'Incorrect credentials'}`);
+            alert(`Login failed: ${data.message || 'Incorrect credentials'}`);
         }
     } catch (error) {
         console.error("Error during login:", error);
-        showAlert("An error occurred during login. Please try again.");
+        alert("An error occurred during login. Please try again.");
     }
 }
-// Handles user logout by clearing the token and resetting the UI
+
 async function logout() {
     try {
         // Frontend logout simply clears the token.
@@ -312,12 +199,11 @@ async function logout() {
         token = null;
         loggedInUserId = null;
         toggleAppVisibility(); 
-        showAlert("Logged out successfully.");
+        alert("Logged out successfully.");
     }
 }
 
-// Function to Fetch and Populate Categories
-// Fetches all categories from the backend and populate the category dropdowns.
+// --- Function to Fetch and Populate Categories ---
 const fetchCategories = async () => {
     if (!token) {
         console.warn("No token available. Cannot fetch categories.");
@@ -400,7 +286,7 @@ const fetchPosts = async (categoryId = "") => {
 
         if (!response.ok) {
             if (response.status === 401 || response.status === 403) {
-                showAlert("Session expired or unauthorized. Please log in again.");
+                alert("Session expired or unauthorized. Please log in again.");
                 logout();
                 return;
             }
@@ -414,7 +300,7 @@ const fetchPosts = async (categoryId = "") => {
             postsList.innerHTML = "<li>No posts yet. Create one above!</li>";
             return;
         }
-        // Iterates through posts creating a list of items for display
+
         posts.forEach((post) => {
             const li = document.createElement("li");
             const createdDate = new Date(post.createdOn);
@@ -442,7 +328,7 @@ const fetchPosts = async (categoryId = "") => {
 // Function to fetch a single post by ID and display it in the modal window.
 const viewPost = async (id) => {
     if (!token) {
-        showAlert("Please log in to view post details.");
+        alert("Please log in to view post details.");
         return;
     }
     try {
@@ -452,7 +338,7 @@ const viewPost = async (id) => {
         });
         if (!response.ok) {
             if (response.status === 404) {
-                showAlert("Post not found.");
+                alert("Post not found.");
                 return;
             }
             throw new Error(`HTTP error! status: ${response.status}`);
@@ -468,9 +354,8 @@ const viewPost = async (id) => {
             hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false
         });
         detailPostAuthor.textContent = post.user ? post.user.username : 'Unknown User';
-        detailQuill.root.innerHTML = post.content; // Set Quill content
-        detailQuill.enable(false); // Set to read-only initially
-
+        detailPostContent.value = post.content;
+        detailPostContent.readOnly = true;
 
         // Set the category in the modal for display
         detailPostCategory.textContent = post.category ? post.category.category_name : 'Uncategorized';
@@ -493,14 +378,14 @@ const viewPost = async (id) => {
         postDetailModal.style.display = "flex";
     } catch (error) {
         console.error("Error viewing post:", error);
-        showAlert("Could not load post details: " + error.message);
+        alert("Could not load post details: " + error.message);
     }
 };
 
 // Function to enable editing mode for the post
 const enableEditMode = () => {
-    detailQuill.enable(true); // Enable editing
-    detailQuill.focus();
+    detailPostContent.readOnly = false;
+    detailPostContent.focus();
 
     // Toggle button visibility
     editButton.style.display = 'none';
@@ -515,21 +400,21 @@ const enableEditMode = () => {
 // Function to save edited post
 const saveEditedPost = async () => {
     const updatedTitle = detailPostTitle.textContent;
-    const updatedContent = detailQuill.root.innerHTML; // Get HTML content from Quill
+    const updatedContent = detailPostContent.value.trim();
     const updatedCategoryId = detailPostCategorySelect.value;
 
     if (!updatedTitle || !updatedContent) {
-        showAlert("Post title and content cannot be empty.");
+        alert("Post title and content cannot be empty.");
         return;
     }
     // Check that a category is selected for edited posts
     if (!updatedCategoryId) {
-        showAlert("Please select a category for your post.");
+        alert("Please select a category for your post.");
         return;
     }
 
     if (!token) {
-        showAlert("You must be logged in to update a post.");
+        alert("You must be logged in to update a post.");
         return;
     }
 
@@ -557,50 +442,47 @@ const saveEditedPost = async () => {
             throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
         }
 
-        showAlert("Post updated successfully!");
+        alert("Post updated successfully!");
         postDetailModal.style.display = "none";
         fetchPosts(); // Refresh list to show updated content
     } catch (error) {
         console.error("Error updating post:", error);
-        showAlert("Failed to update post: " + error.message);
+        alert("Failed to update post: " + error.message);
     }
 };
 
 // Function to delete a post
-const deletePost = () => {
-    showConfirm("Are you sure you want to delete this post? This action cannot be undone.", async (confirmed) => {
-        if (!confirmed) {
-            return;
+const deletePost = async () => {
+    if (!confirm("Are you sure you want to delete this post? This action cannot be undone.")) {
+        return;
+    }
+    if (!token) {
+        alert("You must be logged in to delete a post.");
+        return;
+    }
+
+    try {
+        const response = await fetch(`http://localhost:3001/api/posts/${currentPostId}`, {
+            method: "DELETE",
+            headers: { Authorization: `Bearer ${token}` },
+        });
+
+        if (!response.ok) {
+            const errorData = await response.json();
+            throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
         }
 
-        if (!token) {
-            showAlert("You must be logged in to delete a post.");
-            return;
-        }
-
-        try {
-            const response = await fetch(`http://localhost:3001/api/posts/${currentPostId}`, {
-                method: "DELETE",
-                headers: { Authorization: `Bearer ${token}` },
-            });
-
-            if (!response.ok) {
-                const errorData = await response.json();
-                throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
-            }
-
-            showAlert("Post deleted successfully!");
-            postDetailModal.style.display = "none";
-            fetchPosts();
-        } catch (error) {
-            console.error("Error deleting post:", error);
-            showAlert("Failed to delete post: " + error.message);
-        }
-    });
+        alert("Post deleted successfully!");
+        postDetailModal.style.display = "none";
+        fetchPosts();
+    } catch (error) {
+        console.error("Error deleting post:", error);
+        alert("Failed to delete post: " + error.message);
+    }
 };
 
-// Comment Functions
-// Renders a list of comments for a given post
+// --- Comment Functions ---
+
 const renderComments = (comments) => {
     commentsList.innerHTML = '';
 
@@ -623,22 +505,22 @@ const renderComments = (comments) => {
         commentsList.innerHTML = '<p>No comments yet. Be the first!</p>';
     }
 };
-// Handles the submission of a new comment form
+
 const newCommentHandler = async (event) => {
     event.preventDefault();
 
     const commentText = commentTextInput.value.trim();
 
     if (!commentText) {
-        showAlert('Please enter a comment.');
+        alert('Please enter a comment.');
         return;
     }
     if (!token) {
-        showAlert('You must be logged in to add a comment.');
+        alert('You must be logged in to add a comment.');
         return;
     }
     if (!currentPostId) {
-        showAlert('Error: No post selected to comment on.');
+        alert('Error: No post selected to comment on.');
         return;
     }
 
@@ -660,41 +542,40 @@ const newCommentHandler = async (event) => {
             viewPost(currentPostId); // Re-fetch post details to show new comment
         } else {
             const errorData = await response.json();
-            showAlert(`Failed to add comment: ${errorData.message || 'Unknown error'}`);
+            alert(`Failed to add comment: ${errorData.message || 'Unknown error'}`);
         }
     } catch (err) {
         console.error('Network or server error submitting comment:', err);
-        showAlert('An error occurred while submitting your comment.');
+        alert('An error occurred while submitting your comment.');
     }
 };
 
 
-// Event Listeners
-// Ensures the DOM is fully loaded before running the script.
+// --- Event Listeners ---
+
 document.addEventListener("DOMContentLoaded", () => {
-    // Event listeners for authentication buttons
     registerButton.addEventListener("click", register);
     loginButton.addEventListener("click", login);
     logoutButton.addEventListener("click", logout);
 
-    // Post creation form submission. Handles the submission of the new post form
+    // Post creation form submission
     postForm.addEventListener("submit", async (event) => {
         event.preventDefault();
 
         const title = postTitleInput.value.trim();
-        const content = postQuill.root.innerHTML; // Get HTML content from Quill
+        const content = postContentInput.value.trim();
         const category_id = postCategorySelect.value; // Get selected category ID
 
-        if (!title || !content.replace(/<p><br><\/p>/g, '').trim()) { // Check for empty content
-            showAlert("Please enter both a title and some content for your post.");
+        if (!title || !content) {
+            alert("Please enter both a title and some content for your post.");
             return;
         }
         if (!category_id) {
-            showAlert("Please select a category for your post.");
+            alert("Please select a category for your post.");
             return;
         }
         if (!token) {
-            showAlert("You must be logged in to create a post.");
+            alert("You must be logged in to create a post.");
             return;
         }
 
@@ -709,19 +590,19 @@ document.addEventListener("DOMContentLoaded", () => {
             });
 
             if (response.ok) {
-                showAlert("Post created successfully!");
+                alert("Post created successfully!");
                 postTitleInput.value = "";
-                postQuill.root.innerHTML = ""; // Clear Quill editor
+                postContentInput.value = "";
                 postCategorySelect.value = "";
                 fetchPosts(); // Refresh the list
             } else {
                 const errorData = await response.json();
                 console.error("Error creating post:", errorData.message || "Unknown error");
-                showAlert("Failed to create post: " + (errorData.message || "Server error."));
+                alert("Failed to create post: " + (errorData.message || "Server error."));
             }
         } catch (error) {
             console.error("Error creating post:", error);
-            showAlert("Network error. Could not connect to the server.");
+            alert("Network error. Could not connect to the server.");
         }
     });
 
@@ -737,7 +618,7 @@ document.addEventListener("DOMContentLoaded", () => {
     // Close the modal when the 'x' is clicked
     closeButton.addEventListener("click", () => {
         postDetailModal.style.display = "none";
-        detailQuill.enable(false); // Set to read-only when closing
+        detailPostContent.readOnly = true;
         // Ensure proper display state when modal is closed
         detailPostCategorySelect.style.display = 'none';
         detailCategoryLabel.style.display = 'none';
@@ -748,7 +629,7 @@ document.addEventListener("DOMContentLoaded", () => {
     window.addEventListener("click", (event) => {
         if (event.target === postDetailModal) {
             postDetailModal.style.display = "none";
-            detailQuill.enable(false); // Set to read-only when closing
+            detailPostContent.readOnly = true;
             // Ensure proper display state when modal is closed by clicking outside
             detailPostCategorySelect.style.display = 'none';
             detailCategoryLabel.style.display = 'none';
@@ -756,12 +637,11 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     });
 
-    // Event listeners for the modal's action buttons
+    // Modal action buttons
     editButton.addEventListener("click", enableEditMode);
     saveEditButton.addEventListener("click", saveEditedPost);
     cancelEditButton.addEventListener("click", () => {
-        // Disable the editor and reset the UI to view mode
-        detailQuill.enable(false);
+        detailPostContent.readOnly = true;
         editButton.style.display = 'inline-block';
         deleteButton.style.display = 'inline-block';
         saveEditButton.style.display = 'none';
@@ -774,15 +654,14 @@ document.addEventListener("DOMContentLoaded", () => {
     });
     deleteButton.addEventListener("click", deletePost);
 
-    // Handle submission of a new comment
+    // Comment form submission
     commentForm.addEventListener("submit", newCommentHandler);
-    // If: category selected, handle filtering posts by category.
+
     if (categoryFilterSelect) {
         categoryFilterSelect.addEventListener("change", (event) => {
             const selectedCategoryId = event.target.value;
             fetchPosts(selectedCategoryId); 
         });
     }
-    // Initial call to set the app's visibility state
     toggleAppVisibility();
 });

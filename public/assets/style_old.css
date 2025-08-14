@@ -1,8 +1,5 @@
 /* public/assets/style.css */
 
-/*
-* --- Global Styles ---
-*/
 body {
     font-family: Arial, sans-serif;
     background-color: #f4f4f4;
@@ -36,9 +33,6 @@ hr {
     margin: 20px 0;
 }
 
-/*
-* --- Authentication Section ---
-*/
 #auth-container input[type="text"],
 #auth-container input[type="email"],
 #auth-container input[type="password"],
@@ -61,9 +55,6 @@ hr {
     background-color: #0056b3;
 }
 
-/*
-* --- App Header and Actions ---
-*/
 .header-actions {
     display: flex;
     justify-content: space-between;
@@ -86,9 +77,7 @@ hr {
     color: #555;
 }
 
-/*
-* --- Form Sections and Inputs ---
-*/
+/* Form Sections */
 .note-form-section, .notes-list-section {
     margin-bottom: 30px;
     padding: 20px;
@@ -99,8 +88,7 @@ hr {
 
 #post-form input[type="text"],
 #post-form textarea,
-#comment-form textarea,
-#post-form select {
+#comment-form textarea {
     width: calc(100% - 20px);
     padding: 10px;
     margin-bottom: 10px;
@@ -119,98 +107,12 @@ hr {
     border-radius: 4px;
     cursor: pointer;
     font-size: 16px;
-    transition: background-color 0.2s ease;
 }
 #post-form button:hover, #comment-form button:hover {
     background-color: #218838;
 }
 
-/*
-* --- Quill.js Editor Styling ---
-* These are the new styles for the Quill toolbar buttons.
-*/
 
-/* Overall container and toolbar styling */
-.ql-toolbar.ql-snow {
-    border: 1px solid #ddd;
-    border-bottom: none;
-    border-radius: 4px 4px 0 0;
-    padding: 8px;
-    background: #f7f7f7;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-}
-
-.ql-container.ql-snow {
-    font-family: Arial, sans-serif;
-    border: 1px solid #ddd;
-    border-top: none;
-    border-radius: 0 0 4px 4px;
-    padding: 10px;
-    box-sizing: border-box;
-    min-height: 150px;
-    resize: vertical;
-    background-color: #fff;
-}
-
-#detail-post-content-editor #post-content-editor .ql-container.ql-snow {
-    min-height: 200px;
-}
-
-/* Base style for all buttons in the toolbar */
-.ql-toolbar button {
-    background-color: transparent !important; /* Override the green button style */
-    border: none !important;
-    padding: 5px !important;
-    cursor: pointer;
-    border-radius: 3px;
-    transition: background-color 0.2s ease;
-}
-
-.ql-toolbar button:hover {
-    background-color: #e6f0ff !important;
-}
-
-/* Icon colors for the SVG icons inside buttons */
-.ql-toolbar .ql-stroke {
-    fill: none;
-    stroke: #555;
-    stroke-linecap: round;
-    stroke-linejoin: round;
-    stroke-width: 1.5;
-}
-
-.ql-toolbar .ql-fill,
-.ql-toolbar .ql-stroke.ql-fill {
-    fill: #555;
-}
-
-/* Style for active/toggled buttons */
-.ql-toolbar button.ql-active {
-    background-color: #007bff !important;
-}
-
-.ql-toolbar button.ql-active .ql-stroke {
-    stroke: white;
-}
-
-.ql-toolbar button.ql-active .ql-fill,
-.ql-toolbar button.ql-active .ql-stroke.ql-fill {
-    fill: white;
-}
-
-/* Tooltip styles to make them visible and consistent */
-.ql-tooltip {
-    border: 1px solid #ddd;
-    background-color: white;
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-    border-radius: 4px;
-    padding: 5px 10px;
-    font-size: 0.9em;
-}
-
-/*
-* --- Posts List ---
-*/
 #posts-list {
     list-style: none;
     padding: 0;
@@ -246,9 +148,7 @@ hr {
     margin-top: 5px;
 }
 
-/*
-* --- Modal Styles ---
-*/
+/* Modal Styles */
 .modal {
     display: none; /* Hidden by default */
     position: fixed; /* Stay in place */
@@ -275,18 +175,6 @@ hr {
     position: relative; 
 }
 
-.modal-content.small-modal {
-    max-width: 400px;
-    text-align: center;
-}
-
-.modal-buttons {
-    display: flex;
-    justify-content: center;
-    gap: 10px;
-    margin-top: 20px;
-}
-
 .close-button {
     color: #aaa;
     position: absolute;
@@ -302,6 +190,18 @@ hr {
     color: #000;
     text-decoration: none;
     cursor: pointer;
+}
+
+#detail-post-content { /* Changed from detail-note-text */
+    width: calc(100% - 20px);
+    padding: 10px;
+    margin-bottom: 15px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    box-sizing: border-box;
+    font-size: 1em;
+    line-height: 1.5;
+    resize: vertical;
 }
 
 .detail-actions {
@@ -328,9 +228,7 @@ hr {
 .action-button.cancel { background-color: #6c757d; color: white; }
 .action-button.cancel:hover { background-color: #5a6268; }
 
-/*
-* --- Comments Section ---
-*/
+/* Comments Section */
 #comments-section {
     margin-top: 20px;
     border-top: 1px solid #eee;
@@ -378,9 +276,7 @@ hr {
     display: none !important;
 }
 
-/*
-* --- Responsiveness ---
-*/
+/* Basic responsiveness */
 @media (max-width: 768px) {
     .container, .modal-content {
         width: 95%;
