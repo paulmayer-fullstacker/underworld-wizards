@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <!-- Responsive design. Set viewport width to the viewer's screen width and set the initial zoom level to 1.0. -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Awesome Blog</title>
+    <!-- Link custom style sheet to this document -->
+    <link rel="stylesheet" href="./assets/style.css">
+    <!-- Quill.js CSS.  Link stylesheet for Quill.js. The "snow" theme gives Quill editor its visual appearance. -->
+    <link href="https://cdn.quilljs.com/1.3.6/quill.snow.css" rel="stylesheet">
+</head>
+<body>
+    <!-- Container for Registration/Login page (authentication section) -->
+    <div class="container" id="auth-container">
+        <h1>Welcome to My Blog</h1>
+        <h2>Register</h2>
+        <!-- Text input fields. The id provides a unique identifier for JavaScript to target. -->
+        <input type="text" id="username" placeholder="Username">
+        <input type="email" id="email" placeholder="Email">
+        <input type="password" id="password" placeholder="Password">
+        <!-- Button to trigger registration process. -->
+        <button id="register-button">Register</button>
+        <hr>
+        <h2>Login</h2>
+        <!-- Text input fields. -->
+        <input type="email" id="login-email" placeholder="Email">
+        <input type="password" id="login-password" placeholder="Password">
+        <!-- Button to trigger Login. -->
+        <button id="login-button">Login</button>
+    </div>
+    <!-- THe app-container holds the Post Management window. Hidden, until the user has successfully logged in. -->
+    <div class="container hidden" id="app-container">
+        <h1>My Awesome Blog</h1>
+        <!-- Container div for Welcome msg and logout button -->
+        <div class="header-actions">
+            <!-- Welcome msg inc. users name -->
+            <span id="welcome-message">Hello!</span>
+            <button id="logout-button">Logout</button>
+        </div>
+        <!--  Horizontal rule (line): visual separator. -->
+        <hr>
+         <!-- Container div for new post management -->
+        <div class="note-form-section">
+            <h2>Create New Post</h2>
+            <!-- Form: encapsulates all input fields for a new post -->
+            <form id="post-form">
+                <!-- Text input field for post title (required). -->
+                <input type="text" id="post-title-input" placeholder="Post Title" required>
+                <!-- Container div for Quill editor. JavaScript will attach the Quill instance to this div, by id. Quill toolbar automatically generated here. -->
+                <div id="post-content-editor"></div>
+                <!-- Label for category dropdown -->
+                <label for="post-category-select" style="display: block; margin-top: 10px;">Category:</label>
+                <!-- Category dropdown (required)-->
+                <select id="post-category-select" required>
+                    <option value="">Select a Category</option>
+                </select>
+                <!-- Submit form -->
+                <button type="submit">Create Post</button>
+            </form>
+        </div>
+        <!-- ontainer div displays the list of blog posts -->
+        <div class="notes-list-section">
+            <h2>Blog Posts</h2>
+            <!-- Container div for post filtering -->
+            <div class="filter-controls" style="margin-bottom: 20px;">
+                <label for="category-filter">Filter by Category:</label>
+                <!-- Category dropdown -->
+                <select id="category-filter">
+                    <option value="">All Categories</option>
+                </select>
+            </div>
+            <!-- Unordered list, populated with post summaries by JavaScript -->
+            <ul id="posts-list">
+                <!-- Placeholder list item. Displayed while posts are being fetched -->
+                <li>Loading posts...</li>
+            </ul>
+        </div>
+        <!-- Container div for modal pop-up window, displaying full details of a single post. Initially hidden -->
+        <div id="post-detail-modal" class="modal">
+            <!-- Inner container for modal content -->
+            <div class="modal-content">
+                <!-- Close button. 'X' to top right of modal -->
+                <span class="close-button">&times;</span>
+                <!-- Post title -->
+                <h2 id="detail-post-title"></h2>
+                <!-- Author and date/time of publication -->
+                <p><small>By: <span id="detail-post-author"></span> on <span id="detail-post-date"></span></small></p>
+                <!-- Category -->
+                <p><small>Category: <span id="detail-post-category"></span></small></p>
+                <label for="detail-post-category-select" style="display: none; margin-top: 10px;" id="detail-category-label">Category:</label>
+                <select id="detail-post-category-select" style="display: none; margin-bottom: 10px; width: 100%;"></select>
+                
+                <!--Container div for Quill editor. Displaying and editing post content in the modal -->
+                <div id="detail-post-content-editor"></div>
+                <!-- A container for the action buttons within the modal (Edit, Delete, Save, Cancel). -->              
+                <div class="detail-actions">
+                    <!-- Edit and Delet Post buttons.  Save Canges and Cancel Edit not displayed until entered Edit mode-->
+                    <button id="edit-button" class="action-button edit">Edit Post</button>
+                    <button id="delete-button" class="action-button delete">Delete Post</button>
+                    <button id="save-edit-button" class="action-button save" style="display:none;">Save Changes</button>
+                    <button id="cancel-edit-button" class="action-button cancel" style="display:none;">Cancel Edit</button>
+                </div>
+
+                <hr>
+                <!-- Container div for displaying/adding comments -->
+                <div id="comments-section">
+                    <h3>Comments</h3>
+                    <!-- Container div where comments are displayed -->
+                    <div id="comments-list">
+                        <p>No comments yet. Be the first!</p>
+                    </div>
+
+                    <h4>Add a Comment</h4>
+                    <!-- Form for submitting a new comments -->
+                    <form id="comment-form">
+                        <!-- Input text area for new comment and submit button -->
+                        <textarea id="comment-text-input" placeholder="Write your comment here..." rows="3" required></textarea>
+                        <button type="submit">Submit Comment</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+        
+    </div>
+
+    <!-- Custom Modal for Alerts/Confirms. Replaces default alert()/confir() functions. -->
+    <div id="message-modal" class="modal">
+        <div class="modal-content small-modal">
+            <span class="close-button" id="message-close-button">&times;</span>
+            <h3 id="message-title"></h3>
+            <p id="message-text"></p>
+            <div class="modal-buttons">
+                <button id="message-ok-button" class="action-button save">OK</button>
+                <button id="message-cancel-button" class="action-button cancel hidden">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- Quill.js library. Links to the JavaScript file for Quill.js, providing all its functionality. -->
+    <script src="https://cdn.quilljs.com/1.3.6/quill.js"></script>
+    <!-- Links to our main application logic. -->
+    <script src="./assets/script.js"></script>
+</body>
+</html>
