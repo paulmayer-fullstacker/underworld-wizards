@@ -16,6 +16,11 @@ const rebuild = process.argv[2] === "--rebuild";
 // Serve static files from the 'public' directory
 app.use(express.static(path.join(__dirname, "public")));
 
+// Add your landing page route
+app.get('/landing', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'index_landing.html'));
+});
+
 // Handle GET request at the root route
 app.get("/", (req, res) => {
   res.sendFile(path.join(__dirname, "public", "index.htm"));
