@@ -111,7 +111,7 @@ hr {
     resize: vertical; /* Allow vertical resizing of textareas */
 }
 
-#post-form button, #comment-form button {
+#post-form button, #comment-form button, #follow-button {
     background-color: #28a745;
     color: white;
     padding: 10px 20px;
