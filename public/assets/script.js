@@ -35,6 +35,7 @@ const postContentEditor = document.getElementById("post-content-editor");
 
 // Posts List Elements
 const postsList = document.getElementById("posts-list"); // This is our <ul> element
+const authorPosts = document.getElementById("author-posts"); // a ul for specific author
 
 // Post Detail Modal Elements
 const postDetailModal = document.getElementById("post-detail-modal");
@@ -49,6 +50,7 @@ const editButton = document.getElementById("edit-button");
 const deleteButton = document.getElementById("delete-button");
 const saveEditButton = document.getElementById("save-edit-button");
 const cancelEditButton = document.getElementById("cancel-edit-button");
+const followButton = document.getElementById("follow-button");// button to follow authors
 
 // Category selection for editing within the modal
 const detailPostCategorySelect = document.getElementById("detail-post-category-select");
@@ -73,6 +75,7 @@ const messageCloseButton = document.getElementById('message-close-button');
 
 let messageCallback = null;
 let currentPostId = null; // Reference to the post currently being viewed/edited
+let selectedAuthorId = null; // reference to author of the selected post to be used in follow
 
 // Quill.js Editor Initialization
 
@@ -468,6 +471,7 @@ const viewPost = async (id) => {
             hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false
         });
         detailPostAuthor.textContent = post.user ? post.user.username : 'Unknown User';
+        selectedAuthorId = post.user ? post.user.id: 'Unknonw User';
         detailQuill.root.innerHTML = post.content; // Set Quill content
         detailQuill.enable(false); // Set to read-only initially
 
@@ -487,6 +491,8 @@ const viewPost = async (id) => {
         deleteButton.style.display = isOwner ? 'inline-block' : 'none';
         saveEditButton.style.display = 'none';
         cancelEditButton.style.display = 'none';
+        followButton.style.display = isOwner ? 'none' : 'inline-block';
+        followButton.style.display = 'inline-block';
 
         renderComments(post.comments);
 
@@ -742,6 +748,9 @@ document.addEventListener("DOMContentLoaded", () => {
         detailPostCategorySelect.style.display = 'none';
         detailCategoryLabel.style.display = 'none';
         detailPostCategory.style.display = 'inline';
+        //ric added
+        authorPosts.innerHTML=" ";
+        followButton.innerHTML="follow";
     });
 
     // Close the modal when clicking outside of it
@@ -753,6 +762,8 @@ document.addEventListener("DOMContentLoaded", () => {
             detailPostCategorySelect.style.display = 'none';
             detailCategoryLabel.style.display = 'none';
             detailPostCategory.style.display = 'inline';
+            authorPosts.innerHTML=" ";
+            followButton.innerHTML="follow";
         }
     });
 
@@ -786,3 +797,100 @@ document.addEventListener("DOMContentLoaded", () => {
     // Initial call to set the app's visibility state
     toggleAppVisibility();
 });
+
+
+// eventlistner and function for follow button 
+followButton.addEventListener('click', ()=>{
+        switch(followButton.innerHTML){
+            case "follow": {
+                followButton.innerHTML="unfollow";
+                let selectedAuthor = detailPostAuthor.textContent;
+                 //alert("you are now following: " + selectedAuthor + "  id: " + selectedAuthorId);
+                fetchAuthorPosts(selectedAuthorId);
+                 break;
+            }
+            case "unfollow":{
+                followButton.innerHTML="follow";
+                authorPosts.innerHTML=" ";
+                break;
+            }
+        }
+});
+
+
+
+
+// function to follow author
+const fetchAuthorPosts = async (id) => {
+
+    try {
+        // Construct the URL to include the user id 
+        let url = "http://localhost:3001/api/posts";
+        if (id) {
+            url += `?user_id=${id}`; 
+        }
+
+        const response = await fetch(url, {
+            method: "GET",
+            headers: {
+                "Content-Type": "application/json",
+                "Authorization": `Bearer ${token}`
+            },
+        });
+
+        if (!response.ok) {
+            if (response.status === 401 || response.status === 403) {
+                alert("Session expired or unauthorized. Please log in again.");
+                logout();
+                return;
+            }
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
+        const posts = await response.json();
+        authorPosts.innerHTML = ""; // Clear current list
+
+        if (posts.length === 0) {
+            authorPosts.innerHTML = "<li>No posts yet. Create one above!</li>";
+            return;
+        }
+
+        posts.forEach((post) => {
+
+            if (post.user.id == id) {
+            const li = document.createElement("li");
+            const createdDate = new Date(post.createdOn);
+            const formattedDate = createdDate.toLocaleString('en-GB', {
+                year: 'numeric', month: 'short', day: 'numeric',
+                hour: '2-digit', minute: '2-digit', hour12: false
+            });
+ 
+            li.innerHTML = `
+                <div class="post-info" data-id="${post.id}  ">
+                    <span class="post-title">${post.title}</span><br>
+                    <span class="post-meta">
+                        By: ${post.user ? post.user.username : 'Unknown User'} on ${formattedDate}
+                        ${post.category ? ` (Category: ${post.category.category_name})` : ''} </span>
+                    <button onclick = "displayDetail(${post.id},this)" >select this article</button>
+                </div>
+            `;
+            authorPosts.appendChild(li);
+            }
+
+        });
+    } catch (error) {
+        console.error("Error fetching posts:", error);
+        authorPosts.innerHTML = "<li>Error loading posts. Please try again.</li>";
+    }
+};
+
+function displayDetail(postId, btn){
+    btn.innerHTML="pressed" + " " + postId;
+    authorPosts.innerHTML="";
+    followButton.innerHTML="follow";
+    postDetailModal.style.display = "none";
+    viewPost(postId);
+    followButton.click();
+    
+}
+
