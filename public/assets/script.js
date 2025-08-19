@@ -109,9 +109,8 @@ const detailQuill = new Quill('#detail-post-content-editor', {
 });
 detailQuill.enable(false);
 
-// ---------------------------------------------------------------------
+
 // Custom Modal Functions (replacing default alert() / confirm())
-// ---------------------------------------------------------------------
 
 // Displays custom alert modal with a given message.
 const showAlert = (message) => {
@@ -168,9 +167,7 @@ const showConfirm = (message, callback) => {
     };
 };
 
-// ---------------------------------------------------------------------
 // Helper Functions
-// ---------------------------------------------------------------------
 
 // Toggles visibility of auth/app containers based on login status
 const toggleAppVisibility = async () => { // Async to await fetch for loggedInUserId and welcome message
@@ -226,7 +223,7 @@ const getLoggedInUserInfo = async () => {
     }
 };
 
-// --- Auth Functions ---
+// Auth Functions
 async function register() {
     const username = usernameInput.value.trim();
     const email = emailInput.value.trim();
