@@ -22,8 +22,12 @@ router.get("/me", authMiddleware, async (req, res) => {
         exclude: ['password'],
         // Use `sequelize.literal` to execute a raw SQL subquery to count the number of followers and following.
         include: [
-          [sequelize.literal('(SELECT COUNT(*) FROM `follow` WHERE `followed_id` = `user`.`id`)'), 'followerCount'],
-          [sequelize.literal('(SELECT COUNT(*) FROM `follow` WHERE `follower_id` = `user`.`id`)'), 'followingCount']
+          // // MySQL uses back ticks
+          // [sequelize.literal('(SELECT COUNT(*) FROM `follow` WHERE `followed_id` = `user`.`id`)'), 'followerCount'],
+          // [sequelize.literal('(SELECT COUNT(*) FROM `follow` WHERE `follower_id` = `user`.`id`)'), 'followingCount']
+          // // Postgres uses double quotes
+          [sequelize.literal('(SELECT COUNT(*) FROM "follow" WHERE "followed_id" = "user"."id")'), 'followerCount'],
+          [sequelize.literal('(SELECT COUNT(*) FROM "follow" WHERE "follower_id" = "user"."id")'), 'followingCount']
         ]
       },
       // Eagerly load the actual list of users who are followers and following
@@ -62,8 +66,12 @@ router.get("/:id", async (req, res) => {
         exclude: ['password'],
         // Include the follower and following counts using a raw SQL subquery.
         include: [
-          [sequelize.literal('(SELECT COUNT(*) FROM `follow` WHERE `followed_id` = `user`.`id`)'), 'followerCount'],
-          [sequelize.literal('(SELECT COUNT(*) FROM `follow` WHERE `follower_id` = `user`.`id`)'), 'followingCount']
+           // // MySQL uses back ticks
+          // [sequelize.literal('(SELECT COUNT(*) FROM `follow` WHERE `followed_id` = `user`.`id`)'), 'followerCount'],
+          // [sequelize.literal('(SELECT COUNT(*) FROM `follow` WHERE `follower_id` = `user`.`id`)'), 'followingCount']
+          // // Postgres uses double quotes
+          [sequelize.literal('(SELECT COUNT(*) FROM "follow" WHERE "followed_id" = "user"."id")'), 'followerCount'],
+          [sequelize.literal('(SELECT COUNT(*) FROM "follow" WHERE "follower_id" = "user"."id")'), 'followingCount']
         ]
       },
       // Eagerly load the lists of followers and following.
@@ -101,8 +109,12 @@ router.get("/", authMiddleware, async (req, res) => {
         exclude: ['password'],
         // Include the follower and following counts.
         include: [
-          [sequelize.literal('(SELECT COUNT(*) FROM `follow` WHERE `followed_id` = `user`.`id`)'), 'followerCount'],
-          [sequelize.literal('(SELECT COUNT(*) FROM `follow` WHERE `follower_id` = `user`.`id`)'), 'followingCount']
+          // // MySQL used back ticks
+          // [sequelize.literal('(SELECT COUNT(*) FROM `follow` WHERE `followed_id` = `user`.`id`)'), 'followerCount'],
+          // [sequelize.literal('(SELECT COUNT(*) FROM `follow` WHERE `follower_id` = `user`.`id`)'), 'followingCount']
+          // // Postgres uses dsequelize.literalble quotes
+          [sequelize.literal('(SELECT COUNT(*) FROM "follow" WHERE "followed_id" = "user"."id")'), 'followerCount'],
+          [sequelize.literal('(SELECT COUNT(*) FROM "follow" WHERE "follower_id" = "user"."id")'), 'followingCount']
         ]
       },
       // Add 'group' to avoid duplicate rows from the count

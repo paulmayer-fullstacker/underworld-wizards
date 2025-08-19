@@ -1,9 +1,14 @@
 // public/assets/script.js
 
-let token = localStorage.getItem("authToken");
-let loggedInUserId = null; // Store the ID of the logged-in user
+// This file contains all the client-side JavaScript logic for the blog application.
+// It handles user authentication, post creation, viewing, editing, and deleting,
+// as well as comment functionality and dynamic UI updates.
 
-// --- DOM Element References ---
+// Global Variables
+let token = localStorage.getItem("authToken");
+let loggedInUserId = null;
+
+// DOM Element References
 // Auth/App Containers
 const authContainer = document.getElementById("auth-container");
 const appContainer = document.getElementById("app-container");
@@ -24,11 +29,12 @@ const logoutButton = document.getElementById("logout-button");
 // Post Creation Form Elements
 const postForm = document.getElementById("post-form");
 const postTitleInput = document.getElementById("post-title-input");
-const postContentInput = document.getElementById("post-content-input");
 const postCategorySelect = document.getElementById("post-category-select"); // For creating posts
+const postContentEditor = document.getElementById("post-content-editor");
 
 // Posts List Elements
 const postsList = document.getElementById("posts-list"); // This is our <ul> element
+const authorPosts = document.getElementById("author-posts"); // a ul for specific author
 
 // Post Detail Modal Elements
 const postDetailModal = document.getElementById("post-detail-modal");
@@ -37,16 +43,16 @@ const detailPostTitle = document.getElementById("detail-post-title");
 const detailPostAuthor = document.getElementById("detail-post-author");
 const detailPostDate = document.getElementById("detail-post-date");
 const detailPostCategory = document.getElementById("detail-post-category");
-const detailPostContent = document.getElementById("detail-post-content");
+const detailPostContentEditor = document.getElementById("detail-post-content-editor");
 const editButton = document.getElementById("edit-button");
 const deleteButton = document.getElementById("delete-button");
 const saveEditButton = document.getElementById("save-edit-button");
 const cancelEditButton = document.getElementById("cancel-edit-button");
+const followButton = document.getElementById("follow-button");// button to follow authors
 
 // Category selection for editing within the modal
 const detailPostCategorySelect = document.getElementById("detail-post-category-select");
 const detailCategoryLabel = document.getElementById("detail-category-label");
-
 
 // Comment Section Elements
 const commentsList = document.getElementById("comments-list");
@@ -56,16 +62,122 @@ const commentTextInput = document.getElementById("comment-text-input");
 // Category Filter Element
 const categoryFilterSelect = document.getElementById("category-filter");
 
-let currentPostId = null; // Reference to the post currently being viewed/edited
+// Custom Message Modal Elements
+const messageModal = document.getElementById('message-modal');
+const messageTitle = document.getElementById('message-title');
+const messageText = document.getElementById('message-text');
+const messageOkButton = document.getElementById('message-ok-button');
+const messageCancelButton = document.getElementById('message-cancel-button');
+const messageCloseButton = document.getElementById('message-close-button');
 
-// --- Helper Functions ---
+let messageCallback = null;
+let currentPostId = null; // Reference to the post currently being viewed/edited
+let selectedAuthorId = null; // reference to author of the selected post to be used in follow
+
+// Quill.js Editor Initialization
+const commonQuillOptions = {
+    theme: 'snow',
+    modules: {
+        toolbar: [
+            ['bold', 'italic', 'underline', 'strike'],
+            ['blockquote', 'code-block'],
+            [{ 'header': 1 }, { 'header': 2 }],
+            [{ 'list': 'ordered' }, { 'list': 'bullet' }],
+            [{ 'script': 'sub' }, { 'script': 'super' }],
+            [{ 'indent': '-1' }, { 'indent': '+1' }],
+            [{ 'direction': 'rtl' }],
+            [{ 'size': ['small', false, 'large', 'huge'] }],
+            [{ 'header': [1, 2, 3, 4, 5, 6, false] }],
+            [{ 'color': [] }, { 'background': [] }],
+            [{ 'font': [] }],
+            [{ 'align': [] }],
+            ['link', 'image'],
+            ['clean']
+        ]
+    }
+};
+
+// Quill.js Initialization for Post Creation.
+const postQuill = new Quill('#post-content-editor', {
+    ...commonQuillOptions,
+    placeholder: 'Write your post content here...'
+});
+
+// Quill.js Initialization for Post Details
+const detailQuill = new Quill('#detail-post-content-editor', {
+    ...commonQuillOptions,
+});
+detailQuill.enable(false);
+
+// ---------------------------------------------------------------------
+// Custom Modal Functions (replacing default alert() / confirm())
+// ---------------------------------------------------------------------
+
+// Displays custom alert modal with a given message.
+const showAlert = (message) => {
+    // FIX: ensure modal exists
+    if (!messageModal) {
+        console.warn("messageModal not found; falling back to window.alert");
+        window.alert(message);
+        return;
+    }
+    messageTitle.textContent = 'Notification';
+    messageText.textContent = message;
+    messageOkButton.classList.remove('hidden');
+    messageCancelButton.classList.add('hidden');
+    messageModal.style.display = 'flex';
+
+    messageOkButton.onclick = () => {
+        messageModal.style.display = 'none';
+    };
+    messageCloseButton.onclick = () => {
+        messageModal.style.display = 'none';
+    };
+};
+
+// Displays custom confirmation modal and executes callback function based on the user's choice
+const showConfirm = (message, callback) => {
+    // FIX: ensure modal exists
+    if (!messageModal) {
+        const ok = window.confirm(message);
+        if (callback) callback(ok);
+        return;
+    }
+    messageTitle.textContent = 'Confirm Action';
+    messageText.textContent = message;
+    messageOkButton.classList.remove('hidden');
+    messageCancelButton.classList.remove('hidden');
+    messageModal.style.display = 'flex';
+
+    messageCallback = callback;
+
+    messageOkButton.onclick = () => {
+        messageModal.style.display = 'none';
+        if (messageCallback) messageCallback(true);
+        messageCallback = null; // FIX: reset
+    };
+    messageCancelButton.onclick = () => {
+        messageModal.style.display = 'none';
+        if (messageCallback) messageCallback(false);
+        messageCallback = null; // FIX: reset
+    };
+    messageCloseButton.onclick = () => {
+        messageModal.style.display = 'none';
+        if (messageCallback) messageCallback(false);
+        messageCallback = null; // FIX: reset
+    };
+};
+
+// ---------------------------------------------------------------------
+// Helper Functions
+// ---------------------------------------------------------------------
 
 // Toggles visibility of auth/app containers based on login status
 const toggleAppVisibility = async () => { // Async to await fetch for loggedInUserId and welcome message
     if (token) {
         authContainer.classList.add("hidden");
         appContainer.classList.remove("hidden");
-        await getLoggedInUserInfo(); // Fetch user info after login
+        await getLoggedInUserInfo(); // Fetch user info, posts, and categories after login
         fetchPosts(); // Load all posts initially
         fetchCategories(); // Load categories for filtering and post creation/editing
     } else {
@@ -74,12 +186,12 @@ const toggleAppVisibility = async () => { // Async to await fetch for loggedInUs
         postsList.innerHTML = "<li>Please log in to view posts.</li>"; // Clear posts
         categoryFilterSelect.innerHTML = '<option value="">All Categories</option>';
         postCategorySelect.innerHTML = '<option value="">Select a Category</option>';
-        detailPostCategorySelect.innerHTML = '<option value="">Select a Category</option>'; 
+        detailPostCategorySelect.innerHTML = '<option value="">Select a Category</option>';
         welcomeMessage.textContent = `Hello!`; // Reset message
     }
 };
 
-// Function to get the logged-in user's ID and username. For determining post ownership on the frontend
+// Function to get the logged-in user's ID and username.
 const getLoggedInUserInfo = async () => {
     if (!token) {
         loggedInUserId = null;
@@ -101,7 +213,7 @@ const getLoggedInUserInfo = async () => {
             welcomeMessage.textContent = `Welcome, ${data.user.username}!`;
         } else if (response.status === 401 || response.status === 403) {
             console.error("Token expired or invalid, logging out.");
-            logout(); // Log out if token is invalid
+            logout();
         } else {
             console.error("Failed to fetch logged in user info:", response.status);
             loggedInUserId = null;
@@ -115,14 +227,13 @@ const getLoggedInUserInfo = async () => {
 };
 
 // --- Auth Functions ---
-
 async function register() {
     const username = usernameInput.value.trim();
     const email = emailInput.value.trim();
     const password = passwordInput.value.trim();
 
     if (!username || !email || !password) {
-        alert("Please fill in all fields for registration.");
+        showAlert("Please fill in all fields for registration.");
         return;
     }
 
@@ -135,17 +246,16 @@ async function register() {
         const data = await res.json();
 
         if (res.ok) {
-            alert("User registered successfully. Please login.");
-            // Clear registration form fields
+            showAlert("User registered successfully. Please login.");
             usernameInput.value = "";
             emailInput.value = "";
             passwordInput.value = "";
         } else {
-            alert(`Registration failed: ${data.message || 'Unknown error'}`);
+            showAlert(`Registration failed: ${data.message || 'Unknown error'}`);
         }
     } catch (error) {
         console.error("Error during registration:", error);
-        alert("An error occurred during registration. Please try again.");
+        showAlert("An error occurred during registration. Please try again.");
     }
 }
 
@@ -154,7 +264,7 @@ async function login() {
     const password = loginPasswordInput.value.trim();
 
     if (!email || !password) {
-        alert("Please enter both email and password.");
+        showAlert("Please enter both email and password.");
         return;
     }
 
@@ -169,28 +279,25 @@ async function login() {
         if (res.ok && data.token) {
             localStorage.setItem("authToken", data.token);
             token = data.token;
-            loggedInUserId = data.user_id; 
-
-            alert("User Logged In successfully");
-            toggleAppVisibility(); // Fetch categories and user info
-            // Clear login form fields
+            loggedInUserId = data.user_id;
+            showAlert("User Logged In successfully");
+            toggleAppVisibility();
             loginEmailInput.value = "";
             loginPasswordInput.value = "";
         } else {
-            alert(`Login failed: ${data.message || 'Incorrect credentials'}`);
+            showAlert(`Login failed: ${data.message || 'Incorrect credentials'}`);
         }
     } catch (error) {
         console.error("Error during login:", error);
-        alert("An error occurred during login. Please try again.");
+        showAlert("An error occurred during login. Please try again.");
     }
 }
 
 async function logout() {
     try {
-        // Frontend logout simply clears the token.
         await fetch("http://localhost:3001/api/users/logout", {
             method: "POST",
-            headers: { Authorization: `Bearer ${token}` }, // Still send token if backend expects it
+            headers: { Authorization: `Bearer ${token}` },
         });
     } catch (error) {
         console.warn("Logout endpoint error (might not exist or be necessary):", error);
@@ -198,12 +305,12 @@ async function logout() {
         localStorage.removeItem("authToken");
         token = null;
         loggedInUserId = null;
-        toggleAppVisibility(); 
-        alert("Logged out successfully.");
+        toggleAppVisibility();
+        showAlert("Logged out successfully.");
     }
 }
 
-// --- Function to Fetch and Populate Categories ---
+// Function to Fetch and Populate Categories
 const fetchCategories = async () => {
     if (!token) {
         console.warn("No token available. Cannot fetch categories.");
@@ -222,7 +329,7 @@ const fetchCategories = async () => {
         if (!response.ok) {
             if (response.status === 401 || response.status === 403) {
                 console.error("Unauthorized to fetch categories. Logging out.");
-                logout(); // Log out if token is invalid
+                logout();
                 return;
             }
             throw new Error(`HTTP error! status: ${response.status}`);
@@ -239,9 +346,8 @@ const fetchCategories = async () => {
             categoryFilterSelect.appendChild(option);
         });
 
-        // Populate the post creation/edit form dropdown (postCategorySelect)
+        // Populate the post creation/edit form dropdowns
         postCategorySelect.innerHTML = '<option value="">Select a Category</option>';
-        // Populate the detail modal's category select as well (detailPostCategorySelect)
         detailPostCategorySelect.innerHTML = '<option value="">Select a Category</option>';
 
         categories.forEach(category => {
@@ -250,30 +356,28 @@ const fetchCategories = async () => {
             option1.textContent = category.category_name;
             postCategorySelect.appendChild(option1);
 
-            const option2 = document.createElement("option"); 
+            const option2 = document.createElement("option");
             option2.value = category.id;
             option2.textContent = category.category_name;
-            detailPostCategorySelect.appendChild(option2); 
+            detailPostCategorySelect.appendChild(option2);
         });
 
     } catch (error) {
         console.error("Error fetching categories:", error);
-        // Display user-friendly error message if needed
     }
 };
 
-// Function to fetch all posts from the backend API and display them
-const fetchPosts = async (categoryId = "") => { 
+// Function to fetch all posts
+const fetchPosts = async (categoryId = "") => {
     if (!token) {
         postsList.innerHTML = "<li>Please log in to view posts.</li>";
         return;
     }
 
     try {
-        // Construct the URL. If categoryId is provided, append it as a query parameter.
         let url = "http://localhost:3001/api/posts";
         if (categoryId) {
-            url += `?category_id=${categoryId}`; 
+            url += `?category_id=${categoryId}`;
         }
 
         const response = await fetch(url, {
@@ -286,7 +390,7 @@ const fetchPosts = async (categoryId = "") => {
 
         if (!response.ok) {
             if (response.status === 401 || response.status === 403) {
-                alert("Session expired or unauthorized. Please log in again.");
+                showAlert("Session expired or unauthorized. Please log in again.");
                 logout();
                 return;
             }
@@ -294,7 +398,7 @@ const fetchPosts = async (categoryId = "") => {
         }
 
         const posts = await response.json();
-        postsList.innerHTML = ""; // Clear current list
+        postsList.innerHTML = "";
 
         if (posts.length === 0) {
             postsList.innerHTML = "<li>No posts yet. Create one above!</li>";
@@ -328,7 +432,7 @@ const fetchPosts = async (categoryId = "") => {
 // Function to fetch a single post by ID and display it in the modal window.
 const viewPost = async (id) => {
     if (!token) {
-        alert("Please log in to view post details.");
+        showAlert("Please log in to view post details.");
         return;
     }
     try {
@@ -338,7 +442,7 @@ const viewPost = async (id) => {
         });
         if (!response.ok) {
             if (response.status === 404) {
-                alert("Post not found.");
+                showAlert("Post not found.");
                 return;
             }
             throw new Error(`HTTP error! status: ${response.status}`);
@@ -354,79 +458,71 @@ const viewPost = async (id) => {
             hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false
         });
         detailPostAuthor.textContent = post.user ? post.user.username : 'Unknown User';
-        detailPostContent.value = post.content;
-        detailPostContent.readOnly = true;
+        selectedAuthorId = post.user ? post.user.id : null; // FIX: set null when unknown
+        detailQuill.root.innerHTML = post.content; // Set Quill content
+        detailQuill.enable(false); // read-only initially
 
-        // Set the category in the modal for display
+        // Category display/edit controls
         detailPostCategory.textContent = post.category ? post.category.category_name : 'Uncategorized';
-        detailPostCategory.style.display = 'inline'; // Display span is visible in view mode
-        // Hidden initially for view mode
+        detailPostCategory.style.display = 'inline';
         detailPostCategorySelect.value = post.category ? post.category.id : '';
-        detailPostCategorySelect.style.display = 'none'; // Ensure hidden in view mode
-        detailCategoryLabel.style.display = 'none'; // Label is hidden in view mode
+        detailPostCategorySelect.style.display = 'none';
+        detailCategoryLabel.style.display = 'none';
 
-
-        // Show/hide buttons based on ownership and state
+        // Show/hide buttons based on ownership
         const isOwner = (post.user_id === loggedInUserId);
         editButton.style.display = isOwner ? 'inline-block' : 'none';
         deleteButton.style.display = isOwner ? 'inline-block' : 'none';
         saveEditButton.style.display = 'none';
         cancelEditButton.style.display = 'none';
+        followButton.style.display = isOwner ? 'none' : 'inline-block'; // FIX: remove unconditional override
 
         renderComments(post.comments);
 
         postDetailModal.style.display = "flex";
     } catch (error) {
         console.error("Error viewing post:", error);
-        alert("Could not load post details: " + error.message);
+        showAlert("Could not load post details: " + error.message);
     }
 };
 
-// Function to enable editing mode for the post
+// Enable editing mode for the post
 const enableEditMode = () => {
-    detailPostContent.readOnly = false;
-    detailPostContent.focus();
+    detailQuill.enable(true);
+    detailQuill.focus();
 
     // Toggle button visibility
     editButton.style.display = 'none';
     deleteButton.style.display = 'none';
     saveEditButton.style.display = 'inline-block';
     cancelEditButton.style.display = 'inline-block';
-    detailPostCategory.style.display = 'none'; // Hide the display span
-    detailPostCategorySelect.style.display = 'block'; // Show the select dropdown
-    detailCategoryLabel.style.display = 'block'; // Show the label for the select
+    detailPostCategory.style.display = 'none';
+    detailPostCategorySelect.style.display = 'block';
+    detailCategoryLabel.style.display = 'block';
 };
 
-// Function to save edited post
+// Save edited post
 const saveEditedPost = async () => {
     const updatedTitle = detailPostTitle.textContent;
-    const updatedContent = detailPostContent.value.trim();
+    const updatedContent = detailQuill.root.innerHTML;
     const updatedCategoryId = detailPostCategorySelect.value;
 
     if (!updatedTitle || !updatedContent) {
-        alert("Post title and content cannot be empty.");
+        showAlert("Post title and content cannot be empty.");
         return;
     }
-    // Check that a category is selected for edited posts
     if (!updatedCategoryId) {
-        alert("Please select a category for your post.");
+        showAlert("Please select a category for your post.");
         return;
     }
-
     if (!token) {
-        alert("You must be logged in to update a post.");
+        showAlert("You must be logged in to update a post.");
         return;
     }
 
     try {
         const updateBody = { title: updatedTitle, content: updatedContent };
-        // Include category_id in the update body
-        if (updatedCategoryId) {
-            updateBody.category_id = updatedCategoryId;
-        } else {
-            updateBody.category_id = null; // Explicitly send null if no category is selected
-        }
-
+        updateBody.category_id = updatedCategoryId || null;
 
         const response = await fetch(`http://localhost:3001/api/posts/${currentPostId}`, {
             method: "PUT",
@@ -442,47 +538,47 @@ const saveEditedPost = async () => {
             throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
         }
 
-        alert("Post updated successfully!");
-        postDetailModal.style.display = "none";
-        fetchPosts(); // Refresh list to show updated content
-    } catch (error) {
-        console.error("Error updating post:", error);
-        alert("Failed to update post: " + error.message);
-    }
-};
-
-// Function to delete a post
-const deletePost = async () => {
-    if (!confirm("Are you sure you want to delete this post? This action cannot be undone.")) {
-        return;
-    }
-    if (!token) {
-        alert("You must be logged in to delete a post.");
-        return;
-    }
-
-    try {
-        const response = await fetch(`http://localhost:3001/api/posts/${currentPostId}`, {
-            method: "DELETE",
-            headers: { Authorization: `Bearer ${token}` },
-        });
-
-        if (!response.ok) {
-            const errorData = await response.json();
-            throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
-        }
-
-        alert("Post deleted successfully!");
+        showAlert("Post updated successfully!");
         postDetailModal.style.display = "none";
         fetchPosts();
     } catch (error) {
-        console.error("Error deleting post:", error);
-        alert("Failed to delete post: " + error.message);
+        console.error("Error updating post:", error);
+        showAlert("Failed to update post: " + error.message);
     }
 };
 
-// --- Comment Functions ---
+// Delete a post
+const deletePost = () => {
+    showConfirm("Are you sure you want to delete this post? This action cannot be undone.", async (confirmed) => {
+        if (!confirmed) return;
 
+        if (!token) {
+            showAlert("You must be logged in to delete a post.");
+            return;
+        }
+
+        try {
+            const response = await fetch(`http://localhost:3001/api/posts/${currentPostId}`, {
+                method: "DELETE",
+                headers: { Authorization: `Bearer ${token}` },
+            });
+
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
+            }
+
+            showAlert("Post deleted successfully!");
+            postDetailModal.style.display = "none";
+            fetchPosts();
+        } catch (error) {
+            console.error("Error deleting post:", error);
+            showAlert("Failed to delete post: " + error.message);
+        }
+    });
+};
+
+// Comment Functions
 const renderComments = (comments) => {
     commentsList.innerHTML = '';
 
@@ -512,15 +608,15 @@ const newCommentHandler = async (event) => {
     const commentText = commentTextInput.value.trim();
 
     if (!commentText) {
-        alert('Please enter a comment.');
+        showAlert('Please enter a comment.');
         return;
     }
     if (!token) {
-        alert('You must be logged in to add a comment.');
+        showAlert('You must be logged in to add a comment.');
         return;
     }
     if (!currentPostId) {
-        alert('Error: No post selected to comment on.');
+        showAlert('Error: No post selected to comment on.');
         return;
     }
 
@@ -542,18 +638,17 @@ const newCommentHandler = async (event) => {
             viewPost(currentPostId); // Re-fetch post details to show new comment
         } else {
             const errorData = await response.json();
-            alert(`Failed to add comment: ${errorData.message || 'Unknown error'}`);
+            showAlert(`Failed to add comment: ${errorData.message || 'Unknown error'}`);
         }
     } catch (err) {
         console.error('Network or server error submitting comment:', err);
-        alert('An error occurred while submitting your comment.');
+        showAlert('An error occurred while submitting your comment.');
     }
 };
 
-
-// --- Event Listeners ---
-
+// Event Listeners
 document.addEventListener("DOMContentLoaded", () => {
+    // Event listeners for authentication buttons
     registerButton.addEventListener("click", register);
     loginButton.addEventListener("click", login);
     logoutButton.addEventListener("click", logout);
@@ -563,19 +658,19 @@ document.addEventListener("DOMContentLoaded", () => {
         event.preventDefault();
 
         const title = postTitleInput.value.trim();
-        const content = postContentInput.value.trim();
+        const content = postQuill.root.innerHTML; // Get HTML content from Quill
         const category_id = postCategorySelect.value; // Get selected category ID
 
-        if (!title || !content) {
-            alert("Please enter both a title and some content for your post.");
+        if (!title || !content.replace(/<p><br><\/p>/g, '').trim()) {
+            showAlert("Please enter both a title and some content for your post.");
             return;
         }
         if (!category_id) {
-            alert("Please select a category for your post.");
+            showAlert("Please select a category for your post.");
             return;
         }
         if (!token) {
-            alert("You must be logged in to create a post.");
+            showAlert("You must be logged in to create a post.");
             return;
         }
 
@@ -586,27 +681,27 @@ document.addEventListener("DOMContentLoaded", () => {
                     "Content-Type": "application/json",
                     Authorization: `Bearer ${token}`,
                 },
-                body: JSON.stringify({ title, content, category_id }), 
+                body: JSON.stringify({ title, content, category_id }),
             });
 
             if (response.ok) {
-                alert("Post created successfully!");
+                showAlert("Post created successfully!");
                 postTitleInput.value = "";
-                postContentInput.value = "";
+                postQuill.root.innerHTML = "";
                 postCategorySelect.value = "";
-                fetchPosts(); // Refresh the list
+                fetchPosts();
             } else {
                 const errorData = await response.json();
                 console.error("Error creating post:", errorData.message || "Unknown error");
-                alert("Failed to create post: " + (errorData.message || "Server error."));
+                showAlert("Failed to create post: " + (errorData.message || "Server error."));
             }
         } catch (error) {
             console.error("Error creating post:", error);
-            alert("Network error. Could not connect to the server.");
+            showAlert("Network error. Could not connect to the server.");
         }
     });
 
-    // Handle clicks on the post-info div within the posts list (for viewing post details)
+    // Handle clicks on the posts list (for viewing post details)
     postsList.addEventListener("click", (event) => {
         const postInfoDiv = event.target.closest(".post-info");
         if (postInfoDiv) {
@@ -618,30 +713,32 @@ document.addEventListener("DOMContentLoaded", () => {
     // Close the modal when the 'x' is clicked
     closeButton.addEventListener("click", () => {
         postDetailModal.style.display = "none";
-        detailPostContent.readOnly = true;
-        // Ensure proper display state when modal is closed
+        detailQuill.enable(false);
         detailPostCategorySelect.style.display = 'none';
         detailCategoryLabel.style.display = 'none';
         detailPostCategory.style.display = 'inline';
+        authorPosts.innerHTML=" ";
+        followButton.innerHTML="follow";
     });
 
     // Close the modal when clicking outside of it
     window.addEventListener("click", (event) => {
         if (event.target === postDetailModal) {
             postDetailModal.style.display = "none";
-            detailPostContent.readOnly = true;
-            // Ensure proper display state when modal is closed by clicking outside
+            detailQuill.enable(false);
             detailPostCategorySelect.style.display = 'none';
             detailCategoryLabel.style.display = 'none';
             detailPostCategory.style.display = 'inline';
+            authorPosts.innerHTML=" ";
+            followButton.innerHTML="follow";
         }
     });
 
-    // Modal action buttons
+    // Event listeners for the modal's action buttons
     editButton.addEventListener("click", enableEditMode);
     saveEditButton.addEventListener("click", saveEditedPost);
     cancelEditButton.addEventListener("click", () => {
-        detailPostContent.readOnly = true;
+        detailQuill.enable(false);
         editButton.style.display = 'inline-block';
         deleteButton.style.display = 'inline-block';
         saveEditButton.style.display = 'none';
@@ -650,18 +747,107 @@ document.addEventListener("DOMContentLoaded", () => {
         detailCategoryLabel.style.display = 'none';
         detailPostCategory.style.display = 'inline';
 
-        viewPost(currentPostId); 
+        viewPost(currentPostId);
     });
     deleteButton.addEventListener("click", deletePost);
 
-    // Comment form submission
+    // Handle submission of a new comment
     commentForm.addEventListener("submit", newCommentHandler);
 
+    // Filter by category
     if (categoryFilterSelect) {
         categoryFilterSelect.addEventListener("change", (event) => {
             const selectedCategoryId = event.target.value;
-            fetchPosts(selectedCategoryId); 
+            fetchPosts(selectedCategoryId);
         });
     }
+
+    // Initial call to set the app's visibility state
     toggleAppVisibility();
 });
+
+// Follow button
+followButton.addEventListener('click', ()=>{
+    switch(followButton.innerHTML){
+        case "follow": {
+            followButton.innerHTML="unfollow";
+            let selectedAuthor = detailPostAuthor.textContent;
+            fetchAuthorPosts(selectedAuthorId);
+            break;
+        }
+        case "unfollow":{
+            followButton.innerHTML="follow";
+            authorPosts.innerHTML=" ";
+            break;
+        }
+    }
+});
+
+// function to follow author
+const fetchAuthorPosts = async (id) => {
+    try {
+        let url = "http://localhost:3001/api/posts";
+        if (id) {
+            url += `?user_id=${id}`;
+        }
+
+        const response = await fetch(url, {
+            method: "GET",
+            headers: {
+                "Content-Type": "application/json",
+                "Authorization": `Bearer ${token}`
+            },
+        });
+
+        if (!response.ok) {
+            if (response.status === 401 || response.status === 403) {
+                showAlert("Session expired or unauthorized. Please log in again."); // FIX: use showAlert
+                logout();
+                return;
+            }
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
+        const posts = await response.json();
+        authorPosts.innerHTML = "";
+
+        if (posts.length === 0) {
+            authorPosts.innerHTML = "<li>No posts yet. Create one above!</li>";
+            return;
+        }
+
+        posts.forEach((post) => {
+            if (post.user.id == id) {
+                const li = document.createElement("li");
+                const createdDate = new Date(post.createdOn);
+                const formattedDate = createdDate.toLocaleString('en-GB', {
+                    year: 'numeric', month: 'short', day: 'numeric',
+                    hour: '2-digit', minute: '2-digit', hour12: false
+                });
+
+                li.innerHTML = `
+                    <div class="post-info" data-id="${post.id}">
+                        <span class="post-title">${post.title}</span><br>
+                        <span class="post-meta">
+                            By: ${post.user ? post.user.username : 'Unknown User'} on ${formattedDate}
+                            ${post.category ? ` (Category: ${post.category.category_name})` : ''} </span>
+                        <button onclick="displayDetail(${post.id}, this)">select this article</button>
+                    </div>
+                `;
+                authorPosts.appendChild(li);
+            }
+        });
+    } catch (error) {
+        console.error("Error fetching posts:", error);
+        authorPosts.innerHTML = "<li>Error loading posts. Please try again.</li>";
+    }
+};
+
+function displayDetail(postId, btn){
+    btn.innerHTML="pressed" + " " + postId;
+    authorPosts.innerHTML="";
+    followButton.innerHTML="follow";
+    postDetailModal.style.display = "none";
+    viewPost(postId);
+    followButton.click();
+}
