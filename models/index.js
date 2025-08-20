@@ -1,7 +1,7 @@
 // models/index.js
-const Post = require("./Post");
-const Category = require("./Category");
-const User = require("./User");
+const Post = require("./post");
+const Category = require("./category");
+const User = require("./user");
 const Comment = require("./Comment");
 const Like = require("./Like");
 const Follow = require('./Follow');
