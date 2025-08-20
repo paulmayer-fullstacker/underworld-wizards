@@ -1,13 +1,13 @@
 [
-  { "id": 1, "category_name": "Musculoskeletal (MSK) Physiotherapy" },
-  { "id": 2, "category_name": "Neurological Physiotherapy" },
-  { "id": 3, "category_name": "Cardiorespiratory Physiotherapy" },
-  { "id": 4, "category_name": "Paediatric Physiotherapy" },
-  { "id": 5, "category_name": "Geriatric Physiotherapy" },
-  { "id": 6, "category_name": "Sports Physiotherapy" },
-  { "id": 7, "category_name": "Women's Health Physiotherapy" },
-  { "id": 8, "category_name": "Oncological Physiotherapy" },
-  { "id": 9, "category_name": "Vestibular Rehabilitation" },
-  { "id": 10, "category_name": "Pain Management" }
+  { "category_name": "Musculoskeletal (MSK) Physiotherapy" },
+  { "category_name": "Neurological Physiotherapy" },
+  { "category_name": "Cardiorespiratory Physiotherapy" },
+  { "category_name": "Paediatric Physiotherapy" },
+  { "category_name": "Geriatric Physiotherapy" },
+  { "category_name": "Sports Physiotherapy" },
+  { "category_name": "Women's Health Physiotherapy" },
+  { "category_name": "Oncological Physiotherapy" },
+  { "category_name": "Vestibular Rehabilitation" },
+  { "category_name": "Pain Management" }
 ]
 

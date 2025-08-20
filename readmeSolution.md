@@ -1,19 +1,21 @@
-# Full Stack Notes Application using Node and Express
+# The Underworld WizardsBuilds Build a Micro Blogging Social Network
 
 ## Introduction:
 
-Herewith my submission for Week-8's challenge: a full-stack 'Tech Blog' application, using Node, Express, and MySQL, Sequelize, and JWT authentication. The Tech Blog application provides a dynamic platform for creating, managing, and displaying blog posts.  It allows registered users to compose and publish new blog posts, categorise them, and publish to a wide audience of other registered users. The app provides a means for users to browse all existing posts (or subsets of all posts) sorted by category. Users can then read and comment on the posts of their choice.
+Herewith our submission for the final project: a full-stack 'Micro Blogging Social Network' application (for physios and healthcare professionals), using Node, Express, MySQL, Sequelize, and JWT authentication. The Micro Blogging application provides a dynamic platform for creating, managing, and displaying blog posts.  It allows registered users to compose and publish new blog posts, categorise them, and publish to an audience of other registered physios and healthcare professionals. The app provides a means for the users to browse all existing posts (or subsets of all posts) sorted by category. Users can then read and comment on the posts of their choice. Users can follow and unfollow post authors, displaying all a followed authors posts.
 
 ---
 
 ## The Solution:
 
-The solution comprises an Express server (backend), serving frontend files and providing a RESTful API managing the Blog (Posts and Comments). The server serves frontend files from a directory named 'public', making the frontend (HTML, CSS and JS files), directly accessible to clients. The server provides a set of API endpoints for performing CRUD (Create, Read, Update, Delete) operations on the Blog. The Blog data being persisted in a MySQL database. Communication requests, between frontend and backend applications is managed using JSON Web Token (JWT) authentication.
+The solution comprises an Express server (backend), serving frontend files and providing a RESTful API managing the Micro Blog (Posts, Comments, Follows). The server serves frontend files from a directory named 'public', making the frontend (HTML, CSS and JS files), directly accessible to clients. The server provides a set of API endpoints for performing CRUD (Create, Read, Update, Delete) operations on the Micro Blog. The Micro Blog data being persisted in a MySQL database (for development). Communication requests, between frontend and backend applications is managed using JSON Web Token (JWT) authentication.
+
+Note: On deployment to Render (our hosting platform) the database is migrated to PostgreSQL.
 
 ### Design Strategy
 
-The design of this application was largely dictated be the specification brief for the challenge. The design decisions (on form and function), left to the author, will be discussed here.
-The development strategy that I envisaged for this project was an API-first, backend-driven, iterative approach. First defining what data structures and functionalities were to be exposed via an API. Then, building and testing the backend, and finally building and testing the user interface. Throughout the process, build and test in small, manageable sprints.
+The design of this application was largely dictated be the specification brief for the challenge. The design decisions (on form and function), left to the development team, will be discussed here.
+The development strategy that we envisaged for this project was an API-first, backend-driven, iterative approach. First defining what data structures and functionalities were to be exposed via an API. Then, building and testing the backend, and finally building and testing the user interface. Throughout the process, building and testing in small, manageable sprints.
 
 #### Planning & Requirements (what and why):
 
@@ -33,7 +35,7 @@ This 'requirements' data model naturally dictates our database schema and ORM mo
 Define the API Endpoints:
 
 Based on the functionality and data model, we could proceed to design the API routes for each operation. Thus, defining our "API Contracts."
-For each endpoint, I specified the :
+For each endpoint, we specified the :
 
 - HTTP Method: (GET, POST, PUT, DELETE).
 
@@ -44,9 +46,9 @@ For each endpoint, I specified the :
 - Response Body (for all): What data will be returned on success/failure? (i.e., 200 OK, 400 Bad Request, 500 Internal Server Error).
 
 
-With a clear plan (of function and form) I could begin backend development, taking an iterative, test-driven approach.
+With a clear plan (of function and form) we could begin backend development, taking an iterative, test-driven approach.
 The Database setup and ORM configuration had already been provided, as had Core Authentication & User Management.
-Some basic user routes had been supplied in prior exercises. These needed to be augmented and enhanced to fulfil the API routes for each functional operation. VSCode’s REST Client was extensively used here, to ensure that key contracts (registration, login, and token validation) work correctly, before moving on. The author systematically defining and testing (VSCode REST Client) API requests for all the data resources (i.e., GET /api/posts, and POST /api/comments).
+Some basic user routes had been supplied in prior exercises. These needed to be augmented and enhanced to fulfil the API routes for each functional operation. VSCode’s REST Client was extensively used here, to ensure that key contracts (registration, login, and token validation) worked correctly, before moving on. The team systematically defining and testing (VSCode REST Client) API requests for all the data resources (i.e., GET /api/posts, and POST /api/comments).
 
 ---
 
@@ -98,7 +100,7 @@ The application provides a comprehensive set of API endpoints for managing users
 
 The solution source and test files have been judiciously commented, to provide in-line documentation. So, specific solution features and coding strategies will not be repeated here.
 
-The routes files (routes/category.js, comment-routes.js, post.js, user.js, and index.js) apply the frontend logic for the Blog Post application, using these endpoints. A test plan and procedure for the endpoints is given at blog_post_api_tests.http, within the root folder of this project. Unless specified, each API request requires JWT authentication (application of the Bearer: <token>. within the request body). Most endpoints require the user to be logged in (and possibly prove ownership). This application employs JSON Web Token (JWT) Authentication. JSON Web Token (JWT) authentication is new to the author. So, justification/explanation is warranted here.
+The routes files (routes/category.js, comment-routes.js, post.js, user.js, and index.js) apply the frontend logic for the Micro Blogging application, using these endpoints. A test plan and procedure for the endpoints is given at micro_blog_api_test.http, within the root folder of this project. Unless specified, each API request requires JWT authentication (application of the Bearer: <token>. within the request body). Most endpoints require the user to be logged in (and possibly prove ownership). This application employs JSON Web Token (JWT) Authentication. JSON Web Token (JWT) authentication is new to the authors. So, justification/explanation is warranted here.
 
 ---
 
@@ -119,7 +121,7 @@ While JWTs are stateless on the server, they enable a "stateless session" for th
 ---
 
 ### Frontend Development & Integration
-Once the backend API was stable and thoroughly tested, I began building the user-facing application. This was actually lifted (with considerable modification) from week-7’s challenge (the Note Pad application). Once again, during this part of development, I employed iterative development and continuous testing. This required me to build single small modules at a time, testing the module, then move to the next module. This, in the hope of catches issues early, when they are easier to isolate and rectify. Testing was integrated throughout the process. I used MySQL Workbench to confirm the status of data, and the VSCode REST Client to test API function and client interaction.
+Once the backend API was stable and thoroughly tested, we began building the user-facing application. This was actually lifted (with considerable modification) from week-8’s challenge (the Blog Post application). Once again, during this part of development, we employed iterative development and continuous testing. This required us to build single small modules at a time, testing the module, then move to the next module. This, in the hope of catches issues early, when they are easier to isolate and rectify. Testing was integrated throughout the process. We used MySQL Workbench to confirm the status of data, and the VSCode REST Client to test API function and client interaction.
 
 ---
 
@@ -127,7 +129,7 @@ Once the backend API was stable and thoroughly tested, I began building the user
 
 The installation strategy for a Node.js server involves using npm (Node Package Manager), as bundled with Node.js. The goal is to set up the project with all its external dependencies (like Express) correctly installed and managed. First, we need to install Node, per the operating system in question. See the official Node.js website for details: https://nodejs.org/. Our application uses Sequelize as an Object Relational Mapper (ORM), which supports various databases. We will need a database server installed and set up (this example employs MySQL).
 
-Having successfully installed MySQL and Node, we can go to install credentials and configure the interfaces, within VSCode.
+Having successfully installed MySQL and Node, we can go on to install credentials and configure the interfaces, within VSCode.
 
 Ensure that the database credentialss are loaded into the .env environmental file, within the project root directory. For our example, copy the `.env.example` file, renaming it `.env`, then update the environment variables (DB_PASSWORD={"YOUR DB PASSWORD HERE"}).
 
@@ -151,23 +153,20 @@ Based on our configuration files, the application frontend will now be accessibl
 
 ### GitHub:
 
-The source and dependency files have been pushed to my GitHub 'BlogPost' repository for public access at https://github.com/paulmayer-fullstacker/BlogPost. Before pushing to gitHub, a .gitignore file was created to exclude (ignore) the node_modules dependency directory and the environmental variable (.env file). The addition of this line in the .gitignore file 'node_modules/' causes git to ignore a node_modules directory, held within any subdirectory. The addition of a line containing '.env', will causes git to ignore a .env file, held within any subdirectory.
+The source and dependency files have been pushed to our GitHub 'underworld-wizards' repository for public access at https://github.com/paulmayer-fullstacker/underworld-wizards. Before pushing to gitHub, a .gitignore file was created to exclude (ignore) the node_modules dependency directory and the environmental variable (.env file). The addition of this line in the .gitignore file 'node_modules/' causes git to ignore a node_modules directory, held within any subdirectory. The addition of a line containing '.env', will causes git to ignore a .env file, held within any subdirectory.
 
 ### Render:
 
-It was intended to deploy the Tech Blog application to the Render hosting site, for public access. However, Render no longer supports direct hosting of MySQL databases. Render does provide a fully managed PostgreSQL service, but this would require significant backend recoding, to accommodate the new SQL dialect. The author experimented with the option of deploying MySQL as a Private Service (SQL deployed to a Docker container hosted on GitHub) that React could access over the Internet. Unfortunately (discovered after much time and effort), React does not support Private Service access on its free tier. Deployment to Render was considered too arduous, and was thus withdrawn from this submission.
+It was intended to deploy the Micro Blogging application to the Render hosting site, for public access. However, Render no longer supports direct hosting of MySQL databases. Render does provide a fully managed PostgreSQL service, but this would require significant backend recoding, to accommodate the new SQL dialect. The author experimented with the option of deploying MySQL as a Private Service (SQL deployed to a Docker container hosted on GitHub) that React could access over the Internet. Unfortunately (discovered after much time and effort), React does not support Private Service access on its free tier. Deployment to Render was considered too arduous, and was thus withdrawn from this submission.
 
-### YouTube:
-
-In lieu of the Render shortfall, a short video illustrating use of the Tech Blog application was uploaded to YouTube. The (unlisted) video can be viewed at: https://youtu.be/-A7fg039kEc
 
 ---
 
 ## To Conclude:
 
-I hope that that this submission is adequate and appropriate, at this stage of the course.  
+We hope that that this submission is adequate and appropriate, at this stage of the course.  
 
-I believe that the project does fulfil the challenge requirements brief and serves a useful Tech Blog app.
+We believe that the project does fulfil the challenge requirements brief and serves a useful Tech Blog app.
 
 ---
 
