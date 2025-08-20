@@ -8,6 +8,9 @@
 let token = localStorage.getItem("authToken");
 let loggedInUserId = null;
 
+// The base URL for your API. Use your Render backend service URL.
+const API_BASE_URL = 'https://underworld-wizards.onrender.com'; // Render service URL**
+
 // DOM Element References
 // Auth/App Containers
 const authContainer = document.getElementById("auth-container");
@@ -196,7 +199,7 @@ const getLoggedInUserInfo = async () => {
         return;
     }
     try {
-        const response = await fetch("http://localhost:3001/api/users/me", {
+        const response = await fetch("${API_BASE_URL}/api/users/me", {
             method: "GET",
             headers: {
                 "Content-Type": "application/json",
@@ -235,7 +238,7 @@ async function register() {
     }
 
     try {
-        const res = await fetch("http://localhost:3001/api/users", {
+        const res = await fetch("${API_BASE_URL}/api/users", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ username, email, password }),
@@ -266,7 +269,7 @@ async function login() {
     }
 
     try {
-        const res = await fetch("http://localhost:3001/api/users/login", {
+        const res = await fetch("${API_BASE_URL}/api/users/login", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ email, password }),
@@ -292,7 +295,7 @@ async function login() {
 
 async function logout() {
     try {
-        await fetch("http://localhost:3001/api/users/logout", {
+        await fetch("${API_BASE_URL}/api/users/logout", {
             method: "POST",
             headers: { Authorization: `Bearer ${token}` },
         });
@@ -315,7 +318,7 @@ const fetchCategories = async () => {
     }
 
     try {
-        const response = await fetch("http://localhost:3001/api/categories", {
+        const response = await fetch("${API_BASE_URL}/api/categories", {
             method: "GET",
             headers: {
                 "Content-Type": "application/json",
@@ -372,7 +375,7 @@ const fetchPosts = async (categoryId = "") => {
     }
 
     try {
-        let url = "http://localhost:3001/api/posts";
+        let url = "${API_BASE_URL}/api/posts";
         if (categoryId) {
             url += `?category_id=${categoryId}`;
         }
@@ -433,7 +436,7 @@ const viewPost = async (id) => {
         return;
     }
     try {
-        const response = await fetch(`http://localhost:3001/api/posts/${id}`, {
+        const response = await fetch(`${API_BASE_URL}/api/posts/${id}`, {
             method: "GET",
             headers: { Authorization: `Bearer ${token}` },
         });
@@ -521,7 +524,7 @@ const saveEditedPost = async () => {
         const updateBody = { title: updatedTitle, content: updatedContent };
         updateBody.category_id = updatedCategoryId || null;
 
-        const response = await fetch(`http://localhost:3001/api/posts/${currentPostId}`, {
+        const response = await fetch(`${API_BASE_URL}/api/posts/${currentPostId}`, {
             method: "PUT",
             headers: {
                 "Content-Type": "application/json",
@@ -555,7 +558,7 @@ const deletePost = () => {
         }
 
         try {
-            const response = await fetch(`http://localhost:3001/api/posts/${currentPostId}`, {
+            const response = await fetch(`${API_BASE_URL}/api/posts/${currentPostId}`, {
                 method: "DELETE",
                 headers: { Authorization: `Bearer ${token}` },
             });
@@ -618,7 +621,7 @@ const newCommentHandler = async (event) => {
     }
 
     try {
-        const response = await fetch('http://localhost:3001/api/comments', {
+        const response = await fetch('${API_BASE_URL}/api/comments', {
             method: 'POST',
             body: JSON.stringify({
                 comment_text: commentText,
@@ -672,7 +675,7 @@ document.addEventListener("DOMContentLoaded", () => {
         }
 
         try {
-            const response = await fetch("http://localhost:3001/api/posts", {
+            const response = await fetch("${API_BASE_URL}/api/posts", {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
@@ -783,7 +786,7 @@ followButton.addEventListener('click', ()=>{
 // function to follow author
 const fetchAuthorPosts = async (id) => {
     try {
-        let url = "http://localhost:3001/api/posts";
+        let url = "${API_BASE_URL}/api/posts";
         if (id) {
             url += `?user_id=${id}`;
         }
