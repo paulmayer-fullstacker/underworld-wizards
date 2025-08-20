@@ -199,7 +199,7 @@ const getLoggedInUserInfo = async () => {
         return;
     }
     try {
-        const response = await fetch("${API_BASE_URL}/api/users/me", {
+        const response = await fetch(`${API_BASE_URL}/api/users/me`, {
             method: "GET",
             headers: {
                 "Content-Type": "application/json",
@@ -238,7 +238,7 @@ async function register() {
     }
 
     try {
-        const res = await fetch("${API_BASE_URL}/api/users", {
+        const res = await fetch(`${API_BASE_URL}/api/users`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ username, email, password }),
@@ -269,7 +269,7 @@ async function login() {
     }
 
     try {
-        const res = await fetch("${API_BASE_URL}/api/users/login", {
+        const res = await fetch(`${API_BASE_URL}/api/users/login`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ email, password }),
@@ -295,7 +295,7 @@ async function login() {
 
 async function logout() {
     try {
-        await fetch("${API_BASE_URL}/api/users/logout", {
+        await fetch(`${API_BASE_URL}/api/users/logout`, {
             method: "POST",
             headers: { Authorization: `Bearer ${token}` },
         });
@@ -318,7 +318,7 @@ const fetchCategories = async () => {
     }
 
     try {
-        const response = await fetch("${API_BASE_URL}/api/categories", {
+        const response = await fetch(`${API_BASE_URL}/api/categories`, {
             method: "GET",
             headers: {
                 "Content-Type": "application/json",
@@ -375,7 +375,7 @@ const fetchPosts = async (categoryId = "") => {
     }
 
     try {
-        let url = "${API_BASE_URL}/api/posts";
+        let url = `${API_BASE_URL}/api/posts`;
         if (categoryId) {
             url += `?category_id=${categoryId}`;
         }
@@ -621,7 +621,7 @@ const newCommentHandler = async (event) => {
     }
 
     try {
-        const response = await fetch('${API_BASE_URL}/api/comments', {
+        const response = await fetch(`${API_BASE_URL}/api/comments`, {
             method: 'POST',
             body: JSON.stringify({
                 comment_text: commentText,
@@ -675,7 +675,7 @@ document.addEventListener("DOMContentLoaded", () => {
         }
 
         try {
-            const response = await fetch("${API_BASE_URL}/api/posts", {
+            const response = await fetch(`${API_BASE_URL}/api/posts`, {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
@@ -786,7 +786,7 @@ followButton.addEventListener('click', ()=>{
 // function to follow author
 const fetchAuthorPosts = async (id) => {
     try {
-        let url = "${API_BASE_URL}/api/posts";
+        let url = `${API_BASE_URL}/api/posts`;
         if (id) {
             url += `?user_id=${id}`;
         }
